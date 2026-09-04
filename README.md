@@ -18,7 +18,7 @@ Biomedical datasets are **not** distributed with this repository. SR-microCT acq
 
 > Giannetto\*, Poles\*, Santambrogio, D'Arnese.
 > **A Multi Agent AI Assistant for Osteoporosis Research at the Bone Microscale.**
-> ECCV 2026 BioImage Computing workshop. Proceedings not yet available.
+> ECCV 2026 BioImage Computing workshop. Proceedings are coming soon.
 >
 > \*Equal contribution. Politecnico di Milano, Italy, and University of Edinburgh, United Kingdom.
 

@@ -1,0 +1,41 @@
+drop_off/
+sessions/
+logs/
+.DS_Store
+agent.log
+framework.log
+.pytest_cache/
+.ruff_cache/
+**/__pycache__/
+
+data/
+
+# Large medical image volumes should stay out of git history.
+*.nii
+*.nii.gz
+*.mgh
+*.mgz
+*.nrrd
+*.pyc
+
+multiagent/evaluator_runs
+
+evaluation/output/
+evaluation/__pycache__/
+multiagent/static/
+**/.knn_cache.json
+
+# ---------------------------------------------------------------------------
+# Framework: publish only the lacunae parameter script.
+#
+# The morphometric extraction backend (ifb_framework) is a third-party software
+# that is now a product and cannot be redistributed, so the whole package is
+# excluded. lacune_parameters_blocks_nii.py is published
+# so the parameter definitions are inspectable, but note that it imports
+# ifb_framework at module level and therefore will not run without it.
+#
+# The directory is excluded as `dir/*` rather than `dir/`, because git cannot
+# re-include a file whose parent directory is itself excluded.
+# ---------------------------------------------------------------------------
+multiagent/framework/*
+!multiagent/framework/lacune_parameters_blocks_nii.py

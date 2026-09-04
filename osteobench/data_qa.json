@@ -1,0 +1,699 @@
+[
+  {
+    "id": "data_qa_1",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "What are the spatial dimensions (number of slices, height, width) of the TIFF stack located at {volume_relative_path}?",
+    "additional_instructions": "Read all TIFF files in the directory, create a NIfTI volume. Report the number of files (Z), and the height (Y) and width (X) of a single slice in pixels.",
+    "output_instructions": "Return a JSON object with keys 'n_slices' (int), 'height_px' (int), 'width_px' (int).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "code_sandbox",
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should inspect the TIFF stack in the specified directory and determine the number of slices together with the height and width of a representative slice.",
+        "rationale_for_llm_judge": "Pass if the graph actually inspects the intended TIFF stack and derives the requested geometry from the real files. Fail if it only describes what should be done, uses the wrong input, or stops before obtaining the slice count, height, and width."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "folder_listing_with_sizes",
+          "volume_metadata_audit"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": [
+          "folder_listing_with_sizes",
+          "volume_metadata_audit"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_slices": "int",
+          "height_px": "int",
+          "width_px": "int"
+        },
+        "rules": [
+          "is_positive_int(n_slices)",
+          "is_positive_int(height_px)",
+          "is_positive_int(width_px)"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Verifies the agent can correctly ingest a TIFF stack and report its basic geometry, which is a prerequisite for all downstream tasks.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "scalar_calculation"
+    ]
+  },
+  {
+    "id": "data_qa_2",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_b/T1_S7_step0_Z0.nii.gz",
+      "data/dataset_b/T1_S26_step1_Z0.nii.gz",
+      "data/dataset_b/T5_S33_step0_Z0.nii.gz",
+      "data/dataset_b/T2_S53_step1_Z0.nii.gz",
+      "data/dataset_b/T4_S31_step0_Z0.nii.gz",
+      "data/dataset_b/T2_S41_step0_Z0.nii.gz"
+    ],
+    "question": "What is the voxel size in micrometers for the volume at {volume_relative_path}? If not available in metadata, report null.",
+    "additional_instructions": "Check image metadata (e.g., ImageJ TIFF tags, OME-TIFF XML, or accompanying .txt/.json sidecar). Do not assume a default.",
+    "output_instructions": "Return a JSON object with keys 'voxel_size_um' (float or null), 'source' (string: 'metadata' | 'sidecar_file' | 'not_found').",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should inspect the specified volume and any associated metadata or sidecar files to determine the voxel size in micrometers, and return null only if that information is not available.",
+        "rationale_for_llm_judge": "Pass if the graph actually checks the target volume metadata and any relevant sidecar files, and reports the voxel size in micrometers when found or null when not found. Fail if it assumes a default value, ignores available metadata sources, uses the wrong file, or returns a generic explanation instead of resolving the requested value."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "volume_metadata_audit"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": [
+          "volume_metadata_audit"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "voxel_size_um": "float or null",
+          "source": "string"
+        },
+        "rules": [
+          "'voxel_size_um' in answer",
+          "'source' in answer",
+          "number_or_none_in_range(voxel_size_um, 0.1, 10.0)",
+          "is_string(source) and source.strip() in ['metadata', 'sidecar_file', 'not_found']"
+        ],
+        "biological_note": "SR-microCT voxel sizes for bone lacunae studies are typically in the 1-5 μm range."
+      }
+    },
+    "rationale": "Physical calibration is required for all morphometric results to be interpretable in real units.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "metadata_extraction",
+      "voxel_size_retrieval"
+    ]
+  },
+  {
+    "id": "data_qa_3",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "Compute the intensity histogram of the volume at {volume_relative_path} using 10 equally spaced bins. Report bin edges and counts.",
+    "additional_instructions": "Use all slices. Flatten the volume into a 1D array before binning. Normalize counts to sum to 1 (relative frequency).",
+    "output_instructions": "Return a JSON object with keys 'bin_edges' (list of 11 floats) and 'relative_frequencies' (list of 10 floats, summing to 1.0 ± 0.001).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "code_sandbox",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should compute the intensity histogram of the specified volume using all voxels, with 10 equally spaced bins, and return the bin edges together with normalized relative frequencies.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended volume, bins intensities into exactly 10 equally spaced bins, and returns the bin edges and normalized frequencies derived from the data. Fail if it uses only part of the volume without justification, returns raw counts instead of relative frequencies, uses the wrong number of bins, or does not actually compute the histogram."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "volume_intensity_histogram"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": [
+          "volume_intensity_histogram"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "bin_edges": "list of 11 floats",
+          "relative_frequencies": "list of 10 floats"
+        },
+        "rules": [
+          "is_finite_number_list(bin_edges)",
+          "is_finite_number_list(relative_frequencies)",
+          "len(bin_edges) == 11",
+          "len(relative_frequencies) == 10",
+          "abs(sum(relative_frequencies) - 1.0) < 0.001",
+          "all(value >= 0 for value in relative_frequencies)"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Histogram shape reveals whether the volume has bimodal distribution (background/bone), which validates data quality.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "histogram_computation"
+    ]
+  },
+  {
+    "id": "data_qa_4",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "What are the global minimum, maximum, mean, and standard deviation of voxel intensities in the volume at {volume_relative_path}?",
+    "additional_instructions": "Compute over all voxels of all slices. Report as float values.",
+    "output_instructions": "Return a JSON object with keys 'min' (float), 'max' (float), 'mean' (float), 'std' (float).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "code_sandbox",
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should inspect the full volume and compute the global minimum, maximum, mean, and standard deviation of voxel intensities across all slices.",
+        "rationale_for_llm_judge": "Pass if the graph actually computes all four requested statistics over the intended volume. Fail if it reports only some of them, uses a subset of voxels without justification, relies on assumptions instead of computation, or analyzes the wrong input."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "min": "float",
+          "max": "float",
+          "mean": "float",
+          "std": "float"
+        },
+        "rules": [
+          "is_finite_number(answer['min'])",
+          "is_finite_number(answer['max'])",
+          "is_finite_number(mean)",
+          "is_finite_number(std)",
+          "answer['min'] < mean",
+          "mean < answer['max']",
+          "std > 0"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Basic signal statistics are used to validate intensity range and inform normalization parameters.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "scalar_calculation",
+      "descriptive_statistics"
+    ]
+  },
+  {
+    "id": "data_qa_5",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "Estimate the signal-to-noise ratio (SNR) of the volume at {volume_relative_path}. Use the mean of the top-10% intensity voxels as signal, and the standard deviation of the bottom-10% intensity voxels as noise.",
+    "additional_instructions": "Compute percentiles over all voxels. Report SNR = mean(top 10%) / std(bottom 10%).",
+    "output_instructions": "Return a JSON object with keys 'snr' (float), 'signal_estimate' (float), 'noise_estimate' (float).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "filesystem_and_format_intake",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should estimate the signal-to-noise ratio of the specified volume by using the mean of the top 10% of voxel intensities as signal and the standard deviation of the bottom 10% as noise.",
+        "rationale_for_llm_judge": "Pass if the graph computes percentiles over the intended volume and derives signal_estimate, noise_estimate, and snr from those definitions. Fail if it uses a different SNR definition, skips the percentile-based calculation, analyzes the wrong data, or gives only a qualitative answer."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "snr": "float",
+          "signal_estimate": "float",
+          "noise_estimate": "float"
+        },
+        "rules": [
+          "is_positive_finite_number(snr)",
+          "is_finite_number(signal_estimate)",
+          "is_finite_number(noise_estimate)",
+          "signal_estimate > noise_estimate",
+          "snr > 0"
+        ],
+        "biological_note": "Acceptable SR-microCT SNR for bone analysis is necessary."
+      }
+    },
+    "rationale": "SNR is a standard image quality metric that determines whether downstream segmentation is reliable.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "snr_computation",
+      "scalar_calculation"
+    ]
+  },
+  {
+    "id": "data_qa_6",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "How many TIFF files are present in {volume_relative_path}, and what is the total uncompressed size of the volume in megabytes?",
+    "additional_instructions": "Count .tif and .tiff files only. Compute size as n_slices × height × width × bytes_per_pixel / 1e6.",
+    "output_instructions": "Return a JSON object with keys 'n_files' (int), 'uncompressed_size_mb' (float, 2 decimal places).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should count the TIFF files in the specified directory and compute the total uncompressed volume size in megabytes from the number of slices, slice dimensions, and bytes per pixel.",
+        "rationale_for_llm_judge": "Pass if the graph actually counts only .tif/.tiff files in the intended directory and computes the requested uncompressed size from image properties. Fail if it counts unrelated files, reports compressed on-disk size instead, uses guessed dimensions or dtype, or does not resolve both requested outputs."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "folder_listing_with_sizes"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_files": "int",
+          "uncompressed_size_mb": "float"
+        },
+        "rules": [
+          "is_positive_int(n_files)",
+          "is_positive_finite_number(uncompressed_size_mb)",
+          "not all(key in answer for key in ['height_px', 'width_px', 'bytes_per_pixel']) or (is_positive_int(answer['height_px']) and is_positive_int(answer['width_px']) and is_positive_finite_number(answer['bytes_per_pixel']) and numbers_close(uncompressed_size_mb, n_files * answer['height_px'] * answer['width_px'] * answer['bytes_per_pixel'] / 1e6, relative_tolerance=0.02, absolute_tolerance=0.02))"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Volume size estimation is needed for memory planning and batch processing decisions.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "metadata_extraction",
+      "scalar_calculation"
+    ]
+  },
+  {
+    "id": "data_qa_7",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_b/T1_S7_step0_Z0.nii.gz",
+      "data/dataset_b/T1_S26_step1_Z0.nii.gz",
+      "data/dataset_b/T5_S33_step0_Z0.nii.gz",
+      "data/dataset_b/T2_S53_step1_Z0.nii.gz",
+      "data/dataset_b/T4_S31_step0_Z0.nii.gz",
+      "data/dataset_b/T2_S41_step0_Z0.nii.gz"
+    ],
+    "question": "What is the dynamic range of the volume {volume_relative_path} (max - min intensity)? What bit depth does this suggest (8-bit, 12-bit, or 16-bit)?",
+    "additional_instructions": "Use nibabel for the NIfTI volume. Infer bit depth from both the dynamic range and the actual NIfTI dtype. Report both.",
+    "output_instructions": "Return a JSON object with keys 'dynamic_range' (float), 'inferred_bit_depth' (int: 8, 12, or 16), 'actual_dtype' (string).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should determine the dynamic range of the specified NIfTI volume and infer whether the data most closely corresponds to 8-bit, 12-bit, or 16-bit imagery, while also reporting the actual NIfTI dtype.",
+        "rationale_for_llm_judge": "Pass if the graph computes min and max intensity from the real volume, derives the dynamic range, inspects the actual dtype, and provides a justified inferred bit depth. Fail if it guesses the bit depth without checking the data, omits the dtype, uses the wrong input, or reports only a generic statement."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "volume_metadata_audit"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "dynamic_range": "float",
+          "inferred_bit_depth": "int",
+          "actual_dtype": "string"
+        },
+        "rules": [
+          "is_positive_finite_number(dynamic_range)",
+          "is_int(inferred_bit_depth) and inferred_bit_depth in [8, 12, 16]",
+          "is_valid_numpy_dtype(actual_dtype)"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Bit depth affects normalization strategy and preprocessing thresholds.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "metadata_extraction"
+    ]
+  },
+  {
+    "id": "data_qa_8",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_a/T1_S7step0_Z0",
+      "data/dataset_a/T1_S26step1_Z0",
+      "data/dataset_a/T5_S33step0_Z0",
+      "data/dataset_a/T2_S53step1_Z0",
+      "data/dataset_a/T4_S31step0_Z0",
+      "data/dataset_a/T2_S41step0_Z0"
+    ],
+    "question": "Detect whether the volume at {volume_relative_path} contains any completely black (all-zero) or completely white (all-max) slices. Report their Z-indices if any.",
+    "additional_instructions": "A slice is 'black' if max pixel value == 0. A slice is 'white' if min pixel value == dtype max. Report empty lists if none found.",
+    "output_instructions": "Return a JSON object with keys 'black_slices' (list of int), 'white_slices' (list of int), 'total_slices_checked' (int).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should inspect all slices in the specified volume, detect any completely black or completely white slices according to the provided definitions, and report their Z-indices.",
+        "rationale_for_llm_judge": "Pass if the graph checks the intended volume slice by slice and correctly identifies all-zero and all-max slices using the stated criteria. Fail if it samples only a few slices without justification, uses a different definition, reports only counts instead of indices, or does not actually inspect the stack."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "format_check",
+        "variables_to_extract": {
+          "black_slices": "list of int",
+          "white_slices": "list of int",
+          "total_slices_checked": "int"
+        },
+        "rules": [
+          "is_int_list(black_slices)",
+          "is_int_list(white_slices)",
+          "is_positive_int(total_slices_checked)",
+          "is_positive_int(total_slices_checked) and is_int_list(black_slices) and is_int_list(white_slices) and all(0 <= index < total_slices_checked for index in black_slices + white_slices)"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Blank slices indicate acquisition artifacts or truncated stacks that must be identified before processing.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "artifact_detection"
+    ]
+  },
+  {
+    "id": "data_qa_9",
+    "data_type": "multiple_volumes",
+    "dataset_relative_path": "data/dataset_c/",
+    "question": "Given the dataset directory {dataset_relative_path} containing multiple sample subdirectories, report the number of samples and whether all source volumes share the same XY dimensions.",
+    "additional_instructions": "For each immediate sample subdirectory, inspect its <sample_id>_original.nii.gz source volume and ignore the segmentation subdirectory. Report sample IDs and their (height, width). Flag any inconsistencies.",
+    "output_instructions": "Return a JSON object with keys 'n_samples' (int), 'all_same_dimensions' (bool), 'dimensions_per_sample' (dict: sample_id → [height, width]).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should inspect the dataset directory, identify the immediate sample subdirectories, count the samples, and determine whether all source NIfTI volumes share the same XY dimensions while ignoring the segmentation masks.",
+        "rationale_for_llm_judge": "Pass if the graph actually scans the dataset structure, inspects each sample's <sample_id>_original.nii.gz source volume rather than its segmentation mask, reports the number of samples, records dimensions per sample, and determines whether all XY dimensions are consistent. Fail if it assumes the sample set, ignores sample folders, analyzes the wrong files, or does not resolve the cross-sample consistency question."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "volume_metadata_audit"
+        ],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": [
+          "volume_metadata_audit"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_samples": "int",
+          "all_same_dimensions": "bool",
+          "dimensions_per_sample": "dict"
+        },
+        "rules": [
+          "is_positive_int(n_samples)",
+          "is_bool(all_same_dimensions)",
+          "is_dict(dimensions_per_sample)",
+          "is_dict(dimensions_per_sample) and all(is_string(sample_id) and len(dimensions) == 2 and all(is_positive_int(value) for value in dimensions) for sample_id, dimensions in dimensions_per_sample.items())",
+          "is_positive_int(n_samples) and is_dict(dimensions_per_sample) and len(dimensions_per_sample) == n_samples"
+        ],
+        "biological_note": ""
+      }
+    },
+    "rationale": "Cross-sample consistency of dimensions is required before batch processing or group comparisons.",
+    "capabilities": [
+      "nifti_metadata_inspection",
+      "metadata_extraction",
+      "scalar_calculation"
+    ]
+  },
+  {
+    "id": "data_qa_10",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Estimate the bone volume fraction (BV/TV) from the raw volume {volume_relative_path} using a simple Otsu threshold. Report the threshold value and BV/TV.",
+    "additional_instructions": "Apply Otsu thresholding to the provided central 200-slice representative crop. BV/TV = fraction of voxels above threshold.",
+    "output_instructions": "Return a JSON object with keys 'otsu_threshold' (float), 'bv_tv' (float, between 0 and 1), 'n_slices_used' (int).",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "code_sandbox",
+          "filesystem_and_format_intake"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should estimate bone volume fraction from the provided central 200-slice raw-volume crop by applying Otsu thresholding, then compute the fraction of voxels above threshold.",
+        "rationale_for_llm_judge": "Pass if the graph actually applies Otsu thresholding to the intended raw data, reports the threshold value, the resulting BV/TV, and how many slices were used. Fail if it guesses a threshold, skips the segmentation step, analyzes the wrong input, or provides only a conceptual description instead of the requested values."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "quantitative_imaging_analysis",
+          "lacunae_group_comparison_boxplot",
+          "calculate_lacunae_parameters"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "otsu_threshold": "float",
+          "bv_tv": "float",
+          "n_slices_used": "int"
+        },
+        "rules": [
+          "is_positive_finite_number(otsu_threshold)",
+          "is_finite_number(bv_tv) and 0 < bv_tv < 1",
+          "is_positive_int(n_slices_used)"
+        ],
+        "biological_note": "Cortical bone BV/TV is typically 85-95%; trabecular bone BV/TV is typically 10-30%."
+      }
+    },
+    "rationale": "BV/TV is a fundamental bone microstructure parameter and a quick quality check on segmentation strategy.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "threshold_based_segmentation",
+      "scalar_calculation"
+    ]
+  }
+]

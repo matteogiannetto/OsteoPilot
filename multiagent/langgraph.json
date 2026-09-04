@@ -1,0 +1,9 @@
+{
+  "graphs": {
+    "full_weak":    "src.agent.osteopilot_bootstrap:graph_full_weak",
+    "pi_retries_weak": "src.agent.osteopilot_bootstrap:graph_pi_retries_weak",
+    "pi_single":    "src.agent.osteopilot_bootstrap:graph_pi_single",
+    "llm_only":     "src.agent.osteopilot_bootstrap:graph_llm_only"
+  },
+  "dependencies": ["agent"]
+}

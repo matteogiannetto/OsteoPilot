@@ -1,0 +1,693 @@
+[
+  {
+    "id": "preprocessing_qa_1",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Apply intensity normalization to the volume at {volume_relative_path} so that all values are in [0, 1]. Report the min, max, mean, and std of the normalized volume.",
+    "additional_instructions": "Use min-max normalization: (x - min) / (max - min). Compute statistics per each slice.",
+    "output_instructions": "Return a JSON object with keys 'min' (float), 'max' (float), 'mean' (float), 'std' (float). Save the normalized volume as a TIFF stack in the session artifacts.",
+    "rationale": "Correct normalization is the first step in all preprocessing pipelines. Failure here propagates to all downstream tasks.",
+    "capabilities": [
+      "intensity_normalization",
+      "scalar_calculation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "code_sandbox",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should use the image preprocessing normalization tool on the specified input path, save the normalized artifact, and return min, max, mean, and std grounded in the tool output.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "min_max_intensity_normalization"
+        ],
+        "forbidden_tools": [
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram",
+          "gaussian_filter_image",
+          "otsu_threshold_image"
+        ],
+        "required_tool_sequence": [
+          "min_max_intensity_normalization"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".tif",
+              ".tiff"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "min": "float",
+          "max": "float",
+          "mean": "float",
+          "std": "float"
+        },
+        "rules": [
+          "abs(min - 0.0) < 1e-6",
+          "abs(max - 1.0) < 1e-6",
+          "0 < mean < 1",
+          "std > 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_2",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Apply a Gaussian filter with sigma=1.0 to the normalized volume at {volume_relative_path}. Report the mean gradient magnitude before and after filtering.",
+    "additional_instructions": "Use Sobel or gradient magnitude on a central Z-slice (n_slices // 2) before and after filtering. Normalization should be applied before filtering.",
+    "output_instructions": "Return a JSON object with keys 'gradient_magnitude_before' (float), 'gradient_magnitude_after' (float), 'ratio_after_before' (float). Save the sigma=1 filtered normalized volume as a TIFF stack in the session artifacts.",
+    "rationale": "Validates that filtering is actually smoothing the image, not introducing artifacts.",
+    "capabilities": [
+      "intensity_normalization",
+      "gaussian_filtering",
+      "scalar_calculation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should use the appropriate preprocessing tool outputs for the supported normalization and Gaussian filtering steps, save the filtered normalized volume artifact, use the code sandbox only for gradient calculations not exposed as tools, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image"
+        ],
+        "forbidden_tools": [
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".tif",
+              ".tiff"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "monotonicity_check",
+        "variables_to_extract": {
+          "gradient_magnitude_before": "float",
+          "gradient_magnitude_after": "float",
+          "ratio_after_before": "float"
+        },
+        "rules": [
+          "gradient_magnitude_after < gradient_magnitude_before",
+          "0 < ratio_after_before < 1.0"
+        ],
+        "python_verification": {},
+        "biological_note": "Gaussian filtering is a low-pass operation; it must reduce gradient magnitude."
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_3",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Compare the effect of three Gaussian filter strengths (sigma = 0.5, 1.0, 2.0) on the SNR of the preprocessed volume at {volume_relative_path}. Report SNR for each.",
+    "additional_instructions": "For each sigma: normalize then apply Gaussian, compute SNR using the definition  SNR = mean(top 10% intensity voxels) / std(bottom 10% intensity voxels) on the the central 10 slices only.",
+    "output_instructions": "Return a JSON object with keys 'snr_sigma_0_5' (float), 'snr_sigma_1_0' (float), 'snr_sigma_2_0' (float). Save one filtered normalized TIFF stack for each sigma value in the session artifacts.",
+    "rationale": "Tests that the agent can reason about preprocessing parameter effects and sweep configurations.",
+    "capabilities": [
+      "intensity_normalization",
+      "gaussian_filtering",
+      "snr_computation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should use the appropriate preprocessing tool outputs for the supported normalization and Gaussian filtering steps, save one filtered normalized artifact per sigma value, use the code sandbox only for SNR calculations not exposed as tools, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image"
+        ],
+        "forbidden_tools": [
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".tif",
+              ".tiff"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "monotonicity_check",
+        "variables_to_extract": {
+          "snr_sigma_0_5": "float",
+          "snr_sigma_1_0": "float",
+          "snr_sigma_2_0": "float"
+        },
+        "rules": [
+          "snr_sigma_2_0 >= snr_sigma_1_0 >= snr_sigma_0_5",
+          "snr_sigma_0_5 > 0",
+          "snr_sigma_1_0 > 0",
+          "snr_sigma_2_0 > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Stronger smoothing should increase SNR by suppressing noise variance."
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_4",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Apply morphological opening (ball structuring element, radius=1 voxel) to the binary bone mask from the volume at {volume_relative_path}. Report how many foreground voxels are removed compared to the original binary mask.",
+    "additional_instructions": "Opening = erosion followed by dilation. Use Otsu-thresholded . Report absolute count and relative fraction of removed voxels.",
+    "output_instructions": "Return a JSON object with keys 'voxels_before' (int), 'voxels_after' (int), 'voxels_removed' (int), 'fraction_removed' (float). Save the opened binary bone mask as a NIfTI artifact in the session artifacts.",
+    "rationale": "Morphological opening removes small noise components; verifies the agent correctly implements morphological operations.",
+    "capabilities": [
+      "binary_thresholding",
+      "morphological_operations",
+      "scalar_calculation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should carry this task in the code sandbox, because the required operation is not covered by the dedicated preprocessing tools, derive the requested values from the specified input data, save the opened binary bone mask artifact, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "voxels_before": "int",
+          "voxels_after": "int",
+          "voxels_removed": "int",
+          "fraction_removed": "float"
+        },
+        "rules": [
+          "voxels_after <= voxels_before",
+          "voxels_removed == voxels_before - voxels_after",
+          "0 <= fraction_removed <= 1"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_5",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Apply percentile-based intensity clipping to the volume at {volume_relative_path}: saturate the bottom 0.5% and top 0.5% of voxels to their respective percentile values. Report the lower and upper clip bounds, the number of voxels clipped at each end, and the total clipped fraction.",
+    "additional_instructions": "Compute np.percentile(arr, 0.5) and np.percentile(arr, 99.5) over all voxels. Count voxels strictly below the lower bound and strictly above the upper bound before clipping. Report on the raw volume (no normalization applied first).",
+    "output_instructions": "Return a JSON object with keys 'clip_lower' (float), 'clip_upper' (float), 'n_clipped_low' (int), 'n_clipped_high' (int), 'total_voxels' (int), 'clipped_fraction' (float). Save the percentile-clipped intensity volume as a TIFF stack in the session artifacts.",
+    "rationale": "Percentile clipping is a standard SR-microCT preprocessing step applied before normalization to prevent outlier voxels from compressing the effective dynamic range. It is also a lightweight quality check: very high clipped fractions indicate detector saturation or reconstruction artifacts.",
+    "capabilities": [
+      "tiff_stack_reading",
+      "intensity_normalization",
+      "scalar_calculation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should carry this task in the code sandbox, because the required operation is not covered by the dedicated preprocessing tools, derive the requested values from the specified input data, save the percentile-clipped intensity volume artifact, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".tif",
+              ".tiff"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "clip_lower": "float",
+          "clip_upper": "float",
+          "n_clipped_low": "int",
+          "n_clipped_high": "int",
+          "total_voxels": "int",
+          "clipped_fraction": "float"
+        },
+        "rules": [
+          "clip_lower < clip_upper",
+          "n_clipped_low + n_clipped_high <= total_voxels",
+          "abs(clipped_fraction - ((n_clipped_low + n_clipped_high) / total_voxels)) < 1e-6",
+          "0 <= clipped_fraction < 0.02"
+        ],
+        "python_verification": {},
+        "biological_note": "A clean SR-microCT volume should have very few outlier voxels. Total clipped fraction > 2% at the 0.5th/99.5th percentile boundary suggests saturated detector pixels or acquisition artifacts."
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_6",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Test reproducibility: run the full preprocessing pipeline (normalize → Gaussian sigma=1 → Otsu threshold) twice on the same volume at {volume_relative_path}. Report whether the two binary masks are identical.",
+    "additional_instructions": "Compare the two masks voxel-by-voxel. Report the fraction of differing voxels. A deterministic pipeline should produce fraction=0.",
+    "output_instructions": "Return a JSON object with keys 'masks_identical' (bool), 'fraction_differing' (float), 'n_differing_voxels' (int). Save both binary mask outputs as NIfTI artifacts in the session artifacts.",
+    "rationale": "Reproducibility is a fundamental requirement for scientific validity; any non-determinism must be detected and explained.",
+    "capabilities": [
+      "intensity_normalization",
+      "gaussian_filtering",
+      "binary_thresholding"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should use the appropriate preprocessing tool outputs for the supported normalization, Gaussian filtering, and Otsu thresholding steps, save both binary mask artifacts from the two deterministic pipeline runs, use the code sandbox only for mask comparison calculations not exposed as tools, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image"
+        ],
+        "forbidden_tools": [
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 2
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "masks_identical": "bool",
+          "fraction_differing": "float",
+          "n_differing_voxels": "int"
+        },
+        "rules": [
+          "masks_identical == (fraction_differing == 0.0)",
+          "fraction_differing >= 0",
+          "n_differing_voxels >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_7",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Apply morphological closing (ball radius=2) after Otsu thresholding on the volume at {volume_relative_path}. Report how many small holes (internal void voxels) are filled.",
+    "additional_instructions": "Count foreground voxels before and after closing. Closing fills holes smaller than the structuring element. Report absolute and relative increase.",
+    "output_instructions": "Return a JSON object with keys 'voxels_before' (int), 'voxels_after' (int), 'voxels_added' (int), 'fraction_added' (float). Save the closed binary bone mask as a NIfTI artifact in the session artifacts.",
+    "rationale": "Morphological closing fills small gaps in the bone mask; validates the agent applies it with the correct direction (gains voxels, unlike opening).",
+    "capabilities": [
+      "binary_thresholding",
+      "morphological_operations",
+      "scalar_calculation"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should carry this task in the code sandbox, because the required operation is not covered by the dedicated preprocessing tools, derive the requested values from the specified input data, save the closed binary bone mask artifact, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "voxels_before": "int",
+          "voxels_after": "int",
+          "voxels_added": "int",
+          "fraction_added": "float"
+        },
+        "rules": [
+          "voxels_after >= voxels_before",
+          "voxels_added == voxels_after - voxels_before",
+          "fraction_added >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "preprocessing_qa_8",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_d/FHH13_S18_step0.nii.gz",
+      "data/dataset_d/FHHm17_S1_Z0.0mm.nii.gz",
+      "data/dataset_d/FHO6_S8_step0.nii.gz",
+      "data/dataset_d/FHO13_S3_Z0.0mm.nii.gz",
+      "data/dataset_d/T1_S26_step0_Z0.nii.gz",
+      "data/dataset_d/T2_S53_step0_Z0.nii.gz"
+    ],
+    "question": "Given two preprocessing pipelines — (A) normalize → Gaussian sigma=0.5 → Otsu and (B) normalize → Gaussian sigma=2.0 → Otsu — apply both to {volume_relative_path}. Which produces a binary mask with fewer connected components, and by how much?",
+    "additional_instructions": "Count 3D connected components with 26-connectivity for both masks. Report counts and identify which pipeline is more suitable for a single-object (cortical bone) ROI.",
+    "output_instructions": "Return a JSON object with keys 'n_components_A' (int), 'n_components_B' (int), 'fewer_components_pipeline' (string: 'A' or 'B'), 'difference' (int). Save the binary masks from pipeline A and pipeline B as NIfTI artifacts in the session artifacts.",
+    "rationale": "Tests the agent's ability to compare pipeline configurations and reason about their effect on segmentation topology.",
+    "capabilities": [
+      "gaussian_filtering",
+      "binary_thresholding",
+      "connected_component_analysis"
+    ],
+    "sample_id": "FHH13_S18_step0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake",
+          "quantitative_imaging_analysis"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should use the appropriate preprocessing tool outputs for the supported normalization, Gaussian filtering, and Otsu thresholding steps, save the binary mask artifacts from pipeline A and pipeline B, use the code sandbox only for connected-component calculations not exposed as tools, and return the exact requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image"
+        ],
+        "forbidden_tools": [
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics",
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": [
+          "min_max_intensity_normalization",
+          "gaussian_filter_image",
+          "otsu_threshold_image"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 2
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "monotonicity_check",
+        "variables_to_extract": {
+          "n_components_A": "int",
+          "n_components_B": "int",
+          "fewer_components_pipeline": "string",
+          "difference": "int"
+        },
+        "rules": [
+          "n_components_B <= n_components_A",
+          "fewer_components_pipeline == 'B'",
+          "difference == n_components_A - n_components_B"
+        ],
+        "python_verification": {},
+        "biological_note": "Stronger smoothing merges more small components, so pipeline B should produce fewer connected components."
+      }
+    }
+  }
+]

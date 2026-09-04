@@ -1,0 +1,2140 @@
+[
+  {
+    "id": "phenotyping_qa_1",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the morphometric parameters of the lacunae detected in {volume_relative_path}. Report the distribution of individual lacunar volumes: mean, standard deviation, median, Q25, and Q75 in μm³.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. From the global summary statistics output, locate the volume feature row and extract all five distributional statistics. All values must be in physical units (μm³). Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_volume_um3' (float), 'std_volume_um3' (float), 'median_volume_um3' (float), 'q25_volume_um3' (float), 'q75_volume_um3' (float).",
+    "rationale": "Lacunar volume is the primary morphometric output of the pipeline. Reporting distributional statistics rather than just the mean enables detection of skew and outliers.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_volume_um3": "float",
+          "std_volume_um3": "float",
+          "median_volume_um3": "float",
+          "q25_volume_um3": "float",
+          "q75_volume_um3": "float"
+        },
+        "rules": [
+          "mean_volume_um3 > 0",
+          "std_volume_um3 >= 0",
+          "q25_volume_um3 <= median_volume_um3 <= q75_volume_um3"
+        ],
+        "python_verification": {},
+        "biological_note": "Individual osteocyte lacunae in cortical bone typically range 200-600 μm³. Mean values well outside this range suggest calibration or segmentation issues."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_2",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the morphometric parameters of the lacunae in {volume_relative_path}. Report the mean and standard deviation of individual lacunar surface area in μm².",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. Surface area is computed geometrically from the 3D lacunar boundary. From the global summary statistics output, locate the surface area feature row and extract mean and std. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_surface_area_um2' (float), 'std_surface_area_um2' (float), 'n_lacunae' (int).",
+    "rationale": "Surface area is a standard lacunar descriptor computed from the 3D boundary geometry. It is required to compute SA/V ratio and sphericity downstream.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_surface_area_um2": "float",
+          "std_surface_area_um2": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "mean_surface_area_um2 > 0",
+          "std_surface_area_um2 >= 0",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Lacunar surface area in cortical bone is typically in the range 150-350 μm². Values well below or above this range suggest noise or merged objects."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_3",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the morphometric parameters of the lacunae in {volume_relative_path}. Report the mean and standard deviation of the surface area-to-volume ratio (SA/V, in μm⁻¹) across all detected lacunae.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. The SA/V ratio is derived from per-lacuna surface area and volume measurements. From the global summary statistics output, locate the SA/V ratio feature row and extract mean and std. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_sa_vol_ratio' (float), 'std_sa_vol_ratio' (float).",
+    "rationale": "SA/V ratio is a shape complexity descriptor independent of size. It is a standard parameter in lacunar morphometry and discriminates between compact and irregular shapes.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_sa_vol_ratio": "float",
+          "std_sa_vol_ratio": "float"
+        },
+        "rules": [
+          "mean_sa_vol_ratio > 0",
+          "std_sa_vol_ratio >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": "SA/V ratio for osteocyte lacunae is expected to be in the range 0.3-1.0 μm⁻¹. Higher values indicate smaller or more irregular lacunae; very high values suggest noise objects."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_4",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the lacunar morphometry for {volume_relative_path}. Compute the mean Volume Fraction of Lacunae in Bone Tissue (Lc.V/BV) across all Z-blocks of the sample and report it as a percentage.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. The pipeline processes the volume in overlapping Z-blocks and reports a volume fraction per block. Average the volume fraction values across blocks. If stored as a decimal fraction, multiply by 100 to convert to percentage. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'lc_v_bv_percent' (float), 'n_blocks' (int), 'std_across_blocks' (float).",
+    "rationale": "Lc.V/BV is a primary histomorphometric parameter and a global measure of lacunar porosity. Block-averaged reporting also exposes within-sample spatial heterogeneity.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "lc_v_bv_percent": "float",
+          "n_blocks": "int",
+          "std_across_blocks": "float"
+        },
+        "rules": [
+          "0 < lc_v_bv_percent < 10",
+          "n_blocks > 0",
+          "std_across_blocks >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Lacunar volume fraction (Lc.V/BV) in human cortical bone is typically 0.5-2%. Values above roughly 5% indicate severe over-segmentation or tissue pathology."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_5",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the per-lacuna morphometric parameters for {volume_relative_path}. Report the mean and standard deviation of the lacunar oblateness index (Lc_Ob) across all detected lacunae.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. Lc_Ob is a PCA-derived shape index quantifying how disc-like each lacuna is. From the per-lacuna output, extract all valid Lc_Ob values (excluding missing entries) and compute mean and std. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_lc_ob' (float), 'std_lc_ob' (float), 'n_lacunae' (int).",
+    "rationale": "Lc_Ob describes the shape regime of the lacunar ellipsoid and is a validated discriminator between healthy and pathological bone microstructure.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_lc_ob": "float",
+          "std_lc_ob": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "-1 <= mean_lc_ob <= 1",
+          "std_lc_ob >= 0",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Lc_Ob is a signed PCA-derived shape index ranging from -1 (prolate/cigar-shaped) through 0 (triaxial/intermediate) to 1 (oblate/disc-shaped). Negative values are valid and indicate lacunae leaning toward elongated shapes."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_6",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the per-lacuna morphometric parameters for {volume_relative_path}. Report the mean and standard deviation of the lacunar stretch index (Lc_St) across all detected lacunae.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. Lc_St is a PCA-derived shape index quantifying the elongation of each lacuna along its longest axis. From the per-lacuna output, extract all valid Lc_St values (excluding missing entries) and compute mean and std. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_lc_st' (float), 'std_lc_st' (float), 'n_lacunae' (int).",
+    "rationale": "Lc_St is the complementary shape descriptor to Lc_Ob. Together, they define the position of each lacuna in the ellipsoidal shape space and are used in disease classification studies.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_lc_st": "float",
+          "std_lc_st": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "0 <= mean_lc_st <= 1",
+          "std_lc_st >= 0",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Lc_St (stretch index) quantifies how elongated the lacunar shape is along its longest axis. Values close to 1 indicate strongly elongated lacunae. Typical cortical bone values are in the range 0.3–0.7."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_7",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the lacunar morphometry for {volume_relative_path}. Compute the mean lacunar number density (N.Lc/BV) in lacunae per mm³ of bone tissue, averaged across all Z-blocks.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. The pipeline reports lacunar count per unit bone volume for each Z-block. Average these values across blocks. Ensure the unit is lacunae/mm³, converting from voxel units using the physical voxel size if necessary. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_n_lc_bv_per_mm3' (float), 'std_n_lc_bv_per_mm3' (float), 'n_blocks' (int).",
+    "rationale": "N.Lc/BV is the standard osteocyte density parameter in bone histomorphometry and the primary readout for studies of osteocyte viability and bone quality.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "scalar_calculation",
+      "voxel_size_retrieval"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_n_lc_bv_per_mm3": "float",
+          "std_n_lc_bv_per_mm3": "float",
+          "n_blocks": "int"
+        },
+        "rules": [
+          "mean_n_lc_bv_per_mm3 > 0",
+          "std_n_lc_bv_per_mm3 >= 0",
+          "n_blocks > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "N.Lc/BV in human cortical bone is typically 20,000-80,000 lacunae/mm³, depending on anatomical site and age. Values far below this range suggest severe under-segmentation; values far above suggest noise inclusion."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_8",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the lacunar morphometry for {volume_relative_path}. Report the lacunar number density (N.Lc/BV) for each Z-block and compute the coefficient of variation (CV) of density across blocks.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. The pipeline segments the volume into Z-blocks and reports per-block density. Record the Z-start, Z-end, and density value for each block. Compute CV = std / mean across all block density values. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'n_lc_bv_per_block' (list of floats), 'z_starts' (list of ints), 'z_ends' (list of ints), 'cv_across_blocks' (float), 'n_blocks' (int).",
+    "rationale": "Z-block-wise density distribution reveals spatial heterogeneity in lacunar packing. High CV across blocks may indicate partial-volume artifacts, cortical boundaries, or non-homogeneous ROI selection.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "scalar_calculation",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_lc_bv_per_block": "list of floats",
+          "z_starts": "list of ints",
+          "z_ends": "list of ints",
+          "cv_across_blocks": "float",
+          "n_blocks": "int"
+        },
+        "rules": [
+          "len(n_lc_bv_per_block) == n_blocks",
+          "len(z_starts) == n_blocks",
+          "len(z_ends) == n_blocks",
+          "min(n_lc_bv_per_block) >= 0",
+          "cv_across_blocks >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_9",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract the full lacunar morphometry for {volume_relative_path} and report a consolidated six-parameter summary: mean lacunar volume, mean surface area, mean SA/V ratio, mean Lc_Ob, mean Lc_St, and mean N.Lc/BV.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. Collect the mean values for volume, surface area, and SA/V ratio from the global summary statistics. Collect mean Lc_Ob and Lc_St from the per-lacuna output. Collect mean N.Lc/BV from the per-block density output. Report all six in a single object. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_volume_um3' (float), 'mean_surface_area_um2' (float), 'mean_sa_vol_ratio' (float), 'mean_lc_ob' (float), 'mean_lc_st' (float), 'mean_n_lc_bv_per_mm3' (float), 'sample_id' (string).",
+    "rationale": "The consolidated six-parameter summary is the minimal sufficient morphometric profile for a bone microstructure sample and serves as input to all downstream group comparison and classification tasks.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "mean_volume_um3": "float",
+          "mean_surface_area_um2": "float",
+          "mean_sa_vol_ratio": "float",
+          "mean_lc_ob": "float",
+          "mean_lc_st": "float",
+          "mean_n_lc_bv_per_mm3": "float",
+          "sample_id": "string"
+        },
+        "rules": [
+          "mean_volume_um3 > 0",
+          "mean_surface_area_um2 > 0",
+          "mean_sa_vol_ratio > 0",
+          "-1 <= mean_lc_ob <= 1",
+          "0 <= mean_lc_st <= 1",
+          "mean_n_lc_bv_per_mm3 > 0",
+          "len(sample_id) > 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_10",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "Extract lacunar morphometry for {volume_relative_path}. Report the mean lacunar volume (μm³) and the mean N.Lc/BV (lacunae/mm³) for this 200-slice central crop.",
+    "additional_instructions": "Run the full lacunar morphometry pipeline on the NIfTI volume. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. From the output, collect the mean lacunar volume from the global summary and the mean N.Lc/BV from the per-block density output. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'mean_volume_um3' (float), 'mean_n_lc_bv_per_mm3' (float), 'sample_id' (string).",
+    "rationale": "This question keeps the volume-and-density extraction task while using the shared 200-slice single-volume test input.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "mean_volume_um3": "float",
+          "mean_n_lc_bv_per_mm3": "float",
+          "sample_id": "string"
+        },
+        "rules": [
+          "mean_volume_um3 > 0",
+          "mean_n_lc_bv_per_mm3 > 0",
+          "len(sample_id) > 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_11",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "For the lacunae detected in {volume_relative_path}, compute the coefficient of variation (CV) of individual lacunar volume. Report CV as a percentage.",
+    "additional_instructions": "Extract per-lacuna volume values in μm³. Exclude missing entries. Compute CV = (std / mean) × 100. All three quantities — CV, mean, and std — must be reported so the formula can be verified. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'cv_volume_percent' (float), 'mean_volume_um3' (float), 'std_volume_um3' (float), 'n_lacunae' (int).",
+    "rationale": "CV of lacunar volume measures morphometric heterogeneity within a sample. It is not directly reported by the morphometry pipeline and requires a one-step derivation from the per-lacuna volume distribution.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics",
+      "computational_analysis"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "cv_volume_percent": "float",
+          "mean_volume_um3": "float",
+          "std_volume_um3": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "cv_volume_percent > 0",
+          "mean_volume_um3 > 0",
+          "abs(cv_volume_percent - (std_volume_um3 / mean_volume_um3) * 100) < 1e-4",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_12",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "For the lacunae detected in {volume_relative_path}, compute the Pearson correlation between individual lacunar volume (μm³) and surface area-to-volume ratio (μm⁻¹). Report the correlation coefficient and its p-value.",
+    "additional_instructions": "Extract per-lacuna volume and SA/V ratio values. Exclude rows where either value is missing. Compute the Pearson correlation coefficient and its associated two-tailed p-value over all valid lacunae. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'pearson_r' (float), 'p_value' (float), 'n_lacunae' (int).",
+    "rationale": "Volume–SA/V correlation is a geometrically grounded consistency check: the two quantities are inversely coupled by definition, and their relationship validates that surface area was computed correctly relative to volume.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "correlation_analysis",
+      "computational_analysis"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "pearson_r": "float",
+          "p_value": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "-1 <= pearson_r <= 1",
+          "0 <= p_value <= 1",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Larger lacunae tend to have lower SA/V ratios (inverse relationship); a negative Pearson r is expected. A strongly positive r would indicate a calibration or segmentation issue."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_13",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "For the lacunae detected in {volume_relative_path}, classify each lacuna as oblate (Lc_Ob > 0.5) or prolate (Lc_Ob ≤ 0.5) based on its oblateness index. Report the count and fraction of each shape class.",
+    "additional_instructions": "Extract per-lacuna Lc_Ob values. Exclude missing entries. Apply the threshold Lc_Ob > 0.5 to assign each lacuna to the oblate or prolate class. Compute fractions as counts divided by the total number of valid lacunae. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'n_oblate' (int), 'n_prolate' (int), 'fraction_oblate' (float), 'fraction_prolate' (float), 'n_total' (int).",
+    "rationale": "Oblate/prolate classification is a clinically interpretable summary of shape distribution not reported by the pipeline. It requires a single threshold operation on the per-lacuna shape index.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "scalar_calculation",
+      "computational_analysis"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_oblate": "int",
+          "n_prolate": "int",
+          "fraction_oblate": "float",
+          "fraction_prolate": "float",
+          "n_total": "int"
+        },
+        "rules": [
+          "n_oblate + n_prolate == n_total",
+          "abs(fraction_oblate + fraction_prolate - 1.0) < 1e-6",
+          "0 <= fraction_oblate <= 1",
+          "0 <= fraction_prolate <= 1",
+          "n_total > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Osteocyte lacunae in cortical bone are predominantly oblate (disc-like). A fraction_oblate below 0.4 is unusual and may indicate bone pathology or segmentation errors."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_14",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "For the lacunae detected in {volume_relative_path}, compute the interquartile range (IQR) of individual lacunar surface area. Report Q25, Q75, and IQR in μm².",
+    "additional_instructions": "Extract per-lacuna surface area values in μm². Exclude missing entries. Compute the 25th percentile (Q25), 75th percentile (Q75), and IQR = Q75 − Q25 over all valid lacunae. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'q25_surface_area_um2' (float), 'q75_surface_area_um2' (float), 'iqr_surface_area_um2' (float), 'n_lacunae' (int).",
+    "rationale": "IQR is a robust spread measure resistant to extreme outliers. It complements the mean and std reported in the global summary and requires a percentile computation on the per-lacuna distribution.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "descriptive_statistics",
+      "computational_analysis"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "q25_surface_area_um2": "float",
+          "q75_surface_area_um2": "float",
+          "iqr_surface_area_um2": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "q25_surface_area_um2 < q75_surface_area_um2",
+          "abs(iqr_surface_area_um2 - (q75_surface_area_um2 - q25_surface_area_um2)) < 1e-4",
+          "iqr_surface_area_um2 > 0",
+          "n_lacunae > 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_15",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/T1_S7_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/T1_S26_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/T5_S33_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/T2_S53_step1_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/T4_S31_step0_Z0_slices_z0924-z1124_original.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/T2_S41_step0_Z0_slices_z0924-z1124_original.nii.gz"
+    ],
+    "question": "For the lacunae detected in {volume_relative_path}, apply a volume filter retaining only lacunae with volume between 50 μm³ and 5000 μm³. Report how many lacunae are retained, how many are removed, and the fraction of the original population that survives the filter.",
+    "additional_instructions": "Extract per-lacuna volume values. Exclude missing entries before counting. Count all valid lacunae as n_before. Apply the filter 50 ≤ volume ≤ 5000 μm³ to obtain n_after. Compute n_removed = n_before − n_after and fraction_retained = n_after / n_before. Use the existing matching lacunar segmentation mask at {segmentation_relative_path}; do not generate a new segmentation. Additional information: Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header.",
+    "output_instructions": "Return a JSON object with keys 'n_before_filter' (int), 'n_after_filter' (int), 'n_removed' (int), 'fraction_retained' (float).",
+    "rationale": "Size-based filtering is standard post-processing practice. Reporting the retention fraction quantifies data quality and is not directly available from any pipeline output.",
+    "capabilities": [
+      "lacunar_morphometry_extraction",
+      "scalar_calculation",
+      "computational_analysis"
+    ],
+    "sample_id": "T1_S7_step0_Z0_slices_z0924-z1124",
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should extract the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "calculate_lacunae_parameters"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "calculate_lacunae_parameters"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".csv"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_before_filter": "int",
+          "n_after_filter": "int",
+          "n_removed": "int",
+          "fraction_retained": "float"
+        },
+        "rules": [
+          "n_removed == n_before_filter - n_after_filter",
+          "abs(fraction_retained - n_after_filter / n_before_filter) < 1e-6",
+          "0 <= fraction_retained <= 1",
+          "n_after_filter >= 0",
+          "n_before_filter > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "This task's own filter bounds (50-5000 μm³) match typical literature ranges: lacunae below ~50 μm³ are usually noise, and above ~5000 μm³ are usually merged/segmentation errors."
+      }
+    },
+    "additional_information": "Synthetic calibration information: voxel size is 0.0016 mm (1.6 μm) per voxel side for this central-200-slice dataset; use this calibration for physical unit conversions and do not infer a different voxel size from the NIfTI header."
+  },
+  {
+    "id": "phenotyping_qa_16",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T3 morphometry sample for {patient_id} in the local morphometry KNN reference library, classify the block. What is the predicted disease class (H = Healthy, O = Osteoporotic)?",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T3 (final third, [1519, 1589)) -> `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use the {patient_id} section T3 morphometry CSV as the query input and report the predicted class and confidence from `class_inference`.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T3\",\n  \"volume_third\": \"final\",\n  \"slice_range\": \"1519-1589\",\n  \"predicted_class\": \"<H_or_O>\",\n  \"confidence\": \"<float_rounded_to_3_decimals>\"\n}\nThe final confidence value must be a JSON number, not a string.",
+    "evaluation_criteria": {
+      "strategy": "exact_match",
+      "rules": [
+        "section_name == 'T3'",
+        "volume_third == 'final'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+        "predicted_class in ['H', 'O']",
+        "0.0 <= confidence <= 1.0"
+      ],
+      "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "The expected predicted_class and confidence are obtained from the KNN class_inference output for the requested section T3 query block. The query sample metadata.json provides section and patient metadata.",
+    "rationale": "This is the most fundamental KNN query: classify a positionally specified sub-block. It also tests that the agent correctly maps the requested anatomical third to the slice-index convention.",
+    "capabilities": [
+      "knn_classification",
+      "classification_output",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "exact_match",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "predicted_class": "string",
+          "confidence": "float",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T3'",
+          "volume_third == 'final'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+          "predicted_class in ['H', 'O']",
+          "0.0 <= confidence <= 1.0"
+        ],
+        "python_verification": {},
+        "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_17",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T2 morphometry sample for {patient_id} in the local morphometry KNN reference library, classify the block and report the full class vote breakdown.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use the {patient_id} section T2 morphometry CSV as the query input and report predicted class, confidence, and class_votes from `class_inference`.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T2\",\n  \"volume_third\": \"middle\",\n  \"slice_range\": \"989-1059\",\n  \"predicted_class\": \"<H_or_O>\",\n  \"confidence\": \"<float_rounded_to_3_decimals>\",\n  \"class_votes\": [\n    {\"class_label\": \"<H_or_O>\", \"count\": \"<integer_count>\", \"weight\": \"<float_rounded_to_3_decimals>\"}\n  ]\n}\nThe final confidence, count, and weight values must be JSON numbers, not strings. Include the class vote objects reported by class_inference.class_votes.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T2'",
+        "volume_third == 'middle'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+        "predicted_class in ['H', 'O']",
+        "0.0 <= confidence <= 1.0",
+        "all v['count'] >= 0",
+        "all v['weight'] >= 0"
+      ],
+      "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "Select {patient_id}'s section T2 block [slice0989, slice1059). The classifier output contains the predicted class, confidence, and class votes. metadata.json provides the current query sample's class_label.",
+    "rationale": "The full vote breakdown reveals how top-k neighbors distribute across disease classes and tests that the agent correctly interprets the weighted voting mechanism (weight = 1 / (T² + ε)).",
+    "capabilities": [
+      "knn_classification",
+      "classification_output",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "predicted_class": "string",
+          "confidence": "float",
+          "class_votes": "list",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T2'",
+          "volume_third == 'middle'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+          "predicted_class in ['H', 'O']",
+          "0.0 <= confidence <= 1.0",
+          "len(class_votes) >= 1",
+          "all(v.get('class_label') in ['H', 'O'] and v.get('count', -1) >= 0 and v.get('weight', -1) >= 0 for v in class_votes)"
+        ],
+        "python_verification": {},
+        "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_18",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T1 morphometry sample for {patient_id} as the query, find the 5 most similar reference blocks by Hotelling T2 distance.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T1 (first third, [460, 530)) -> `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use top_k=5. Report the ranked `top_block_matches` with block id, T2 distance, patient ID, and class label.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T1\",\n  \"top5_matches\": [\n    {\"rank\": \"<integer_rank>\", \"block_id\": \"<reference_block_id>\", \"t2\": \"<float_rounded_to_4_decimals>\", \"patient\": \"<patient_id>\", \"class_label\": \"<H_or_O>\"}\n  ]\n}\nThe final rank and t2 values must be JSON numbers, not strings. The top5_matches list must contain exactly 5 objects sorted by rank ascending. Here block_id is the reference block identifier returned by the KNN tool.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T1'",
+        "len(top5_matches) == 5",
+        "all t2 >= 0",
+        "t2 values are sorted ascending",
+        "all class_label in ['H', 'O']",
+        "all patient values are present in the configured morphometry library metadata"
+      ],
+      "biological_note": "The first-third sub-block samples cortical tissue near the shallow portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "{patient_id} section T1 = [slice0460, slice0530). Use the KNN similarity workflow with top_k=5; the ranked nearest-block results are the ground truth. The T2=0 entry is the self-match when the query block is present in the reference library. Patient and class are confirmed against the metadata.json.",
+    "rationale": "Using a section T1 query validates retrieval of the ranked neighbor list while reusing a cached patient volume and segmentation.",
+    "capabilities": [
+      "knn_classification",
+      "reference_library_lookup",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "top5_matches": "list",
+          "section_name": "string"
+        },
+        "rules": [
+          "section_name == 'T1'",
+          "len(top5_matches) == 5",
+          "all(m.get('class_label') in ['H', 'O'] and m.get('t2', -1) >= 0 for m in top5_matches)",
+          "[m.get('rank') for m in top5_matches] == [1, 2, 3, 4, 5]",
+          "[m.get('t2') for m in top5_matches] == sorted([m.get('t2') for m in top5_matches])"
+        ],
+        "python_verification": {},
+        "biological_note": "The first-third sub-block samples cortical tissue near the shallow portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_19",
+    "data_type": "multiple_blocks_same_patient",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "For {patient_id}, use the existing section T1, T2, and T3 morphometry samples as three separate KNN queries. For each query, count how many of the 5 nearest reference blocks are Healthy (H) and Osteoporotic (O). Does the dominant class stay consistent across sections?",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T1 (first third, [460, 530)) -> `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/metadata.json`; T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`; T3 (final third, [1519, 1589)) -> `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Run one KNN query per section with top_k=5. For each returned top_block_matches list, count class_label H and O and report section_name, volume_third, slice_range, dominant_class, and whether the dominant class is stable across sections.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"results\": [\n    {\"patient_id\": \"{patient_id}\", \"section_name\": \"T1\", \"volume_third\": \"first\", \"slice_range\": \"460-530\", \"n_healthy\": \"<integer_count>\", \"n_osteoporotic\": \"<integer_count>\", \"dominant_class\": \"<H_or_O>\"},\n    {\"patient_id\": \"{patient_id}\", \"section_name\": \"T2\", \"volume_third\": \"middle\", \"slice_range\": \"989-1059\", \"n_healthy\": \"<integer_count>\", \"n_osteoporotic\": \"<integer_count>\", \"dominant_class\": \"<H_or_O>\"},\n    {\"patient_id\": \"{patient_id}\", \"section_name\": \"T3\", \"volume_third\": \"final\", \"slice_range\": \"1519-1589\", \"n_healthy\": \"<integer_count>\", \"n_osteoporotic\": \"<integer_count>\", \"dominant_class\": \"<H_or_O>\"}\n  ],\n  \"composition_stable\": \"<boolean>\"\n}\nThe final n_healthy, n_osteoporotic, and composition_stable values must be JSON numbers/booleans, not strings. In every result object, set patient_id exactly to \"{patient_id}\". Do not output query block ids, section-specific ids, filenames, hashes, or morphometry block names as patient_id.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "all result section_name values are exactly one of ['T1', 'T2', 'T3']",
+        "results[0]['patient_id'] == '{patient_id}' and results[0]['volume_third'] == 'first' and results[0]['section_name'] == 'T1'",
+        "results[1]['patient_id'] == '{patient_id}' and results[1]['volume_third'] == 'middle' and results[1]['section_name'] == 'T2'",
+        "results[2]['patient_id'] == '{patient_id}' and results[2]['volume_third'] == 'final' and results[2]['section_name'] == 'T3'",
+        "n_healthy + n_osteoporotic == 5 for each entry",
+        "all dominant_class values are in ['H', 'O']"
+      ],
+      "biological_note": "Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample. Compare section-level KNN outputs using the requested canonical sections."
+    },
+    "ground_truth_derivation": "Run the KNN workflow three times, once per canonical section. For each section result, count class labels among the 5 nearest reference blocks. composition_stable is true only when all three dominant_class values are identical.",
+    "rationale": "Comparing nearest-neighborhood composition across the three standard sub-blocks of the same volume tests within-patient morphometric spatial consistency: a biologically meaningful question about lacunar uniformity along the depth axis.",
+    "capabilities": [
+      "knn_classification",
+      "classification_output",
+      "block_selection",
+      "multi_query_comparison"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "results": "list",
+          "composition_stable": "boolean",
+          "section_name": "string"
+        },
+        "rules": [
+          "all(r.get('section_name') in ['T1', 'T2', 'T3'] for r in results)",
+          "len(results) == 3",
+          "[r.get('volume_third') for r in results] == ['first', 'middle', 'final']",
+          "len(results) >= 3 and slice_range_matches(results[0].get('slice_range'), results[0].get('slice_start'), results[0].get('slice_end'), 460, 530) and slice_range_matches(results[1].get('slice_range'), results[1].get('slice_start'), results[1].get('slice_end'), 989, 1059) and slice_range_matches(results[2].get('slice_range'), results[2].get('slice_start'), results[2].get('slice_end'), 1519, 1589)",
+          "all(r.get('patient_id') == '{patient_id}' for r in results)",
+          "all(r.get('n_healthy', -1) + r.get('n_osteoporotic', -1) == 5 for r in results)",
+          "all(r.get('dominant_class') in ['H', 'O'] for r in results)",
+          "composition_stable in [True, False]"
+        ],
+        "python_verification": {},
+        "biological_note": "Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample. Compare section-level KNN outputs using the requested canonical sections."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_20",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T2 morphometry sample for {patient_id}, determine which patient in the local morphometry KNN reference library is most similar overall.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use the patient-level similarity summary returned by the KNN tool. Report the patient with the highest weighted similarity score, its class label, match count, and weighted score.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T2\",\n  \"volume_third\": \"middle\",\n  \"slice_range\": \"989-1059\",\n  \"best_patient\": \"<patient_id>\",\n  \"class_label\": \"<H_or_O>\",\n  \"match_count\": \"<integer_count>\",\n  \"weighted_score\": \"<float_rounded_to_4_decimals>\"\n}\nThe final match_count and weighted_score values must be JSON numbers, not strings.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T2'",
+        "selected_block == '{patient_id}'",
+        "best_patient is one of the patients present in the configured morphometry library metadata",
+        "class_label in ['H', 'O']",
+        "match_count >= 1",
+        "weighted_score > 0"
+      ],
+      "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "Select {patient_id}'s section T2 block [slice0989, slice1059). The highest weighted patient-similarity summary entry is the answer. Disease class is confirmed via metadata.json.",
+    "rationale": "Patient-level aggregation combines multiple block matches per patient into a single score, enabling patient-level retrieval while preserving the chance that repeated patient blocks influence the feature-extraction outcome.",
+    "capabilities": [
+      "knn_classification",
+      "patient_similarity_aggregation",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "best_patient": "string",
+          "class_label": "string",
+          "match_count": "int",
+          "weighted_score": "float",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T2'",
+          "volume_third == 'middle'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+          "best_patient not in [None, '']",
+          "class_label in ['H', 'O']",
+          "match_count >= 1",
+          "weighted_score > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_21",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T3 morphometry sample for {patient_id}, find its nearest reference block and compare their mean morphometric profiles. Which 3 active KNN features show the largest absolute mean difference?",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T3 (final third, [1519, 1589)) -> `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use the KNN top match as nearest reference block. Compute query feature means from the query morphometry CSV and reference means from the nearest reference sample/cache output; report the top 3 absolute differences among active KNN features.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T3\",\n  \"volume_third\": \"final\",\n  \"slice_range\": \"1519-1589\",\n  \"nearest_neighbor_block\": \"<reference_block_id>\",\n  \"nearest_neighbor_t2\": \"<float_rounded_to_4_decimals>\",\n  \"top3_different_features\": [\n    {\"feature\": \"<feature_name>\", \"query_mean\": \"<float_rounded_to_4_decimals>\", \"reference_mean\": \"<float_rounded_to_4_decimals>\", \"abs_diff\": \"<float_rounded_to_4_decimals>\"}\n  ]\n}\nThe final nearest_neighbor_t2, query_mean, reference_mean, and abs_diff values must be JSON numbers, not strings. The top3_different_features list must contain exactly 3 objects sorted by abs_diff descending.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T3'",
+        "selected_block == '{patient_id}'",
+        "nearest_neighbor_t2 >= 0",
+        "len(top3_different_features) == 3",
+        "abs_diff[0] >= abs_diff[1] >= abs_diff[2]",
+        "volume_third == 'final'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+        "all feature names are in the active KNN feature policy",
+        "abs(abs_diff[i] - abs(query_mean[i] - reference_mean[i])) < 1e-3 for each entry"
+      ],
+      "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "{patient_id} has section T1, section T2, and section T3 blocks. Select the section T3 block [slice1519, slice1589). Use the KNN workflow; note the rank-1 reference block. Compare the query feature means with the stored reference-block feature means in metadata.json feature order. Sort absolute differences descending and take the top 3.",
+    "rationale": "Identifying features with the largest mean difference between a query and its nearest neighbor reveals which morphometric descriptors drive dissimilarity, giving a feature-level explanation of the Hotelling T² distance.",
+    "capabilities": [
+      "knn_classification",
+      "feature_vector_comparison",
+      "reference_library_lookup",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "nearest_neighbor_block": "string",
+          "nearest_neighbor_t2": "float",
+          "top3_different_features": "list",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T3'",
+          "volume_third == 'final'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+          "nearest_neighbor_block not in [None, '']",
+          "nearest_neighbor_t2 >= 0",
+          "len(top3_different_features) == 3",
+          "all(f.get('feature') not in [None, ''] and f.get('abs_diff', -1) >= 0 for f in top3_different_features)",
+          "[f.get('abs_diff') for f in top3_different_features] == sorted([f.get('abs_diff') for f in top3_different_features], reverse=True)"
+        ],
+        "python_verification": {},
+        "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_22",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T2 morphometry sample for {patient_id}, find its nearest reference block and identify the 3 active KNN features with the smallest absolute mean difference.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use the KNN top match as nearest reference block. Compute query and reference feature means and return the 3 smallest absolute differences among active KNN features.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T2\",\n  \"volume_third\": \"middle\",\n  \"slice_range\": \"989-1059\",\n  \"nearest_neighbor_block\": \"<reference_block_id>\",\n  \"nearest_neighbor_t2\": \"<float_rounded_to_4_decimals>\",\n  \"top3_similar_features\": [\n    {\"feature\": \"<feature_name>\", \"query_mean\": \"<float_rounded_to_4_decimals>\", \"reference_mean\": \"<float_rounded_to_4_decimals>\", \"abs_diff\": \"<float_rounded_to_4_decimals>\"}\n  ]\n}\nThe final nearest_neighbor_t2, query_mean, reference_mean, and abs_diff values must be JSON numbers, not strings. The top3_similar_features list must contain exactly 3 objects sorted by abs_diff ascending.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T2'",
+        "selected_block == '{patient_id}'",
+        "len(top3_similar_features) == 3",
+        "abs_diff[0] <= abs_diff[1] <= abs_diff[2]",
+        "volume_third == 'middle'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+        "all feature names are in the active KNN feature policy",
+        "abs(abs_diff[i] - abs(query_mean[i] - reference_mean[i])) < 1e-3 for each entry"
+      ],
+      "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "Select {patient_id}'s section T2 block [slice0989, slice1059). Procedure is identical to phenotyping_qa_21 but sort absolute differences ascending. Constant features like Voxel Size should appear near the top.",
+    "rationale": "Identifying morphometrically conserved features between a query and its nearest neighbor reveals which descriptors are non-discriminative at the individual block level, complementing phenotyping_qa_21 and informing feature selection.",
+    "capabilities": [
+      "knn_classification",
+      "feature_vector_comparison",
+      "reference_library_lookup",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "nearest_neighbor_block": "string",
+          "nearest_neighbor_t2": "float",
+          "top3_similar_features": "list",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T2'",
+          "volume_third == 'middle'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+          "nearest_neighbor_block not in [None, '']",
+          "nearest_neighbor_t2 >= 0",
+          "len(top3_similar_features) == 3",
+          "all(f.get('feature') not in [None, ''] and f.get('abs_diff', -1) >= 0 for f in top3_similar_features)",
+          "[f.get('abs_diff') for f in top3_similar_features] == sorted([f.get('abs_diff') for f in top3_similar_features])"
+        ],
+        "python_verification": {},
+        "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_23",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T2 morphometry sample for {patient_id}, classify it with KNN and explain the prediction using the top-3 nearest reference blocks.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Use top_k=3 or retain the first 3 top_block_matches. For each of the top-3 reference blocks, compare active-feature means against the query and report the single feature with the greatest absolute mean difference.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T2\",\n  \"volume_third\": \"middle\",\n  \"slice_range\": \"989-1059\",\n  \"predicted_class\": \"<H_or_O>\",\n  \"top3_drivers\": [\n    {\"block_id\": \"<reference_block_id>\", \"class_label\": \"<H_or_O>\", \"t2\": \"<float_rounded_to_4_decimals>\", \"most_different_feature\": \"<feature_name>\", \"query_mean\": \"<float_rounded_to_4_decimals>\", \"reference_mean\": \"<float_rounded_to_4_decimals>\", \"abs_diff\": \"<float_rounded_to_4_decimals>\"}\n  ]\n}\nThe final t2, query_mean, reference_mean, and abs_diff values must be JSON numbers, not strings. The top3_drivers list must contain exactly 3 objects ordered by rank/t2 ascending.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T2'",
+        "selected_block == '{patient_id}'",
+        "predicted_class in ['H', 'O']",
+        "len(top3_drivers) == 3",
+        "t2 values are sorted ascending across the 3 entries",
+        "volume_third == 'middle'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+        "all most_different_feature names are in the active KNN feature policy",
+        "abs_diff for most_different_feature equals max(abs_diff over all 22 features) for each block pair"
+      ],
+      "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "{patient_id} section T2 block is [slice0989, slice1059). Use the KNN workflow and take the top-3 nearest reference blocks. For each, compare stored reference-block feature means with query feature means and take the argmax of the absolute differences. Class labels must come from KNN output and metadata, not from the question text.",
+    "rationale": "Linking each top-k neighbor to its most discriminating morphometric feature makes the classification decision morphologically transparent and tests the agent's ability to combine retrieval output with feature-level reasoning.",
+    "capabilities": [
+      "knn_classification",
+      "feature_vector_comparison",
+      "classification_output",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "predicted_class": "string",
+          "top3_drivers": "list",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T2'",
+          "volume_third == 'middle'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 989, 1059)",
+          "predicted_class in ['H', 'O']",
+          "len(top3_drivers) == 3",
+          "all(d.get('class_label') in ['H', 'O'] and d.get('t2', -1) >= 0 and d.get('most_different_feature') not in [None, ''] for d in top3_drivers)",
+          "[d.get('t2') for d in top3_drivers] == sorted([d.get('t2') for d in top3_drivers])"
+        ],
+        "python_verification": {},
+        "biological_note": "The middle-third sub-block samples cortical tissue from the central portion of the volume. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_24",
+    "data_type": "single_block",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "Using the existing section T3 morphometry sample for patient {patient_id}, find the nearest Osteoporotic reference block and report the feature with the greatest absolute mean difference from the query.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T3 (final third, [1519, 1589)) -> `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z1519-1589_sectionT3/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Run KNN with enough neighbors to cover the library, filter returned matches to class_label O, select the smallest T2, and compare active-feature means to report the largest absolute difference.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_name\": \"T3\",\n  \"volume_third\": \"final\",\n  \"slice_range\": \"1519-1589\",\n  \"nearest_opposite_block\": \"<reference_block_id>\",\n  \"patient\": \"<patient_id>\",\n  \"class_label\": \"<H_or_O>\",\n  \"t2\": \"<float_rounded_to_4_decimals>\",\n  \"most_different_feature\": \"<feature_name>\",\n  \"query_mean\": \"<float_rounded_to_4_decimals>\",\n  \"reference_mean\": \"<float_rounded_to_4_decimals>\",\n  \"abs_diff\": \"<float_rounded_to_4_decimals>\"\n}\nThe final t2, query_mean, reference_mean, and abs_diff values must be JSON numbers, not strings.",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_name == 'T3'",
+        "selected_block == '{patient_id}'",
+        "class_label == 'O'",
+        "patient is one of the osteoporotic patients present in the configured morphometry library metadata",
+        "t2 > 0",
+        "volume_third == 'final'",
+        "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+        "most_different_feature is in the active KNN feature policy",
+        "abs_diff equals max absolute mean difference among all 22 features for this block pair"
+      ],
+      "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+    },
+    "ground_truth_derivation": "{patient_id} section T3 block is [slice1519, slice1589). Use the KNN workflow with the relevant reference blocks requested by the task, select the minimum-T2 matching entry, compare reference and query feature means, then take the argmax absolute difference.",
+    "rationale": "Finding the nearest opposite-class neighbor and its most discriminating feature reveals the morphometric boundary between healthy and osteoporotic bone at the section T3 depth of the volume, and identifies the descriptor that most separates the two groups at that boundary.",
+    "capabilities": [
+      "knn_classification",
+      "feature_vector_comparison",
+      "reference_library_lookup",
+      "block_selection"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "volume_third": "string",
+          "slice_range": "string",
+          "nearest_opposite_block": "string",
+          "patient": "string",
+          "class_label": "string",
+          "t2": "float",
+          "most_different_feature": "string",
+          "query_mean": "float",
+          "reference_mean": "float",
+          "abs_diff": "float",
+          "section_name": "string",
+          "slice_start": "int",
+          "slice_end": "int"
+        },
+        "rules": [
+          "section_name == 'T3'",
+          "volume_third == 'final'",
+          "slice_range_matches(slice_range, slice_start, slice_end, 1519, 1589)",
+          "nearest_opposite_block not in [None, '']",
+          "patient not in [None, '']",
+          "class_label == 'O'",
+          "t2 > 0",
+          "most_different_feature not in [None, '']",
+          "abs_diff >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": "The final-third sub-block samples cortical tissue near the deep portion of the 2048-slice scan. Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample."
+      }
+    }
+  },
+  {
+    "id": "phenotyping_qa_25",
+    "data_type": "multiple_blocks_same_patient",
+    "patient_id": [
+      "T1_S26",
+      "T1_S7",
+      "T2_S41",
+      "T2_S53",
+      "T4_S31",
+      "T5_S33"
+    ],
+    "question": "For {patient_id}, separately rank reference blocks for the existing section T1 and section T2 morphometry queries. Identify blocks whose relative rank changes by more than 2 positions between the two queries.",
+    "additional_instructions": "Use the default local writable morphometry KNN reference library. Do not use the benchmark volume datasets for this task: they are segmentation benchmark inputs and their depth is incompatible with the canonical KNN slice coordinates. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`; the query morphometry already exists in the library. Do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`; call `find_similar_patients_by_block_hotelling_t2` using the default library. Canonical sections are T1=[slice0460,slice0530), T2=[slice0989,slice1059), and T3=[slice1519,slice1589). For this task use these query sample files: T1 (first third, [460, 530)) -> `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z460-530_sectionT1/metadata.json`; T2 (middle third, [989, 1059)) -> `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/morphometry.csv`, metadata `data/dataset_i/{patient_id}_step1_Z0_z989-1059_sectionT2/metadata.json`. Read `patient_id`, `section_name`, `slice_start`, and `slice_end` from each query sample `metadata.json`. Do not use the query metadata `class_label` as a predicted class; only report class labels returned by the KNN tool for class inference, class votes, or reference matches. Run KNN twice with enough neighbors to cover the library: once with T1 and once with T2. Rank by ascending T2 distance, compare ranks for block_ids present in both returned lists, and report rank changes with delta > 2.",
+    "output_instructions": "Final answer requirements:\nReturn only one valid JSON object. Do not include markdown, prose, tables, explanations, bullet points, summaries, or code fences.\nUse exactly the requested field names and do not add extra fields unless explicitly requested.\nThe JSON templates below use placeholder strings inside angle brackets, such as \"<H_or_O>\" or \"<float>\". These placeholders only describe the required value type and are not answers. Do not copy them into the final answer; replace each placeholder with the value derived from the KNN tool output or metadata, using the correct JSON type. For numeric and boolean fields, remove the placeholder quotes and output a JSON number or boolean. The final answer must contain no angle-bracket placeholders such as \"<...>\".\nUse these exact canonical section mappings in the final JSON:\n- section T1 -> section_name: \"T1\", volume_third: \"first\"\n- section T2 -> section_name: \"T2\", volume_third: \"middle\"\n- section T3 -> section_name: \"T3\", volume_third: \"final\"\nDo not use \"sectionT1\", \"sectionT2\", \"sectionT3\", \"T1\", \"T2\", \"T3\", \"first third\", \"middle third\", \"final third\", \"third\", \"step0\", \"step1\", 0, 1, 2, or 3 as volume_third values.\n\nReturn exactly this JSON structure, replacing every placeholder with the correct JSON value type:\n{\n  \"section_names\": [\"T1\", \"T2\"],\n  \"first_third_ranking\": [\n    {\"rank\": \"<integer_rank>\", \"block_id\": \"<reference_block_id>\", \"patient\": \"<patient_id>\", \"class_label\": \"<H_or_O>\", \"t2\": \"<float_rounded_to_4_decimals>\"}\n  ],\n  \"middle_third_ranking\": [\n    {\"rank\": \"<integer_rank>\", \"block_id\": \"<reference_block_id>\", \"patient\": \"<patient_id>\", \"class_label\": \"<H_or_O>\", \"t2\": \"<float_rounded_to_4_decimals>\"}\n  ],\n  \"rank_changes\": [\n    {\"block_id\": \"<reference_block_id>\", \"rank_first\": \"<integer_rank>\", \"rank_middle\": \"<integer_rank>\", \"delta\": \"<integer_absolute_difference>\"}\n  ]\n}\nThe final rank, t2, and delta values must be JSON numbers, not strings. The ranking lists must each contain 10 objects sorted by rank ascending. section_names must be exactly [\"T1\", \"T2\"]. If no block has delta > 2, return \"rank_changes\": [].",
+    "evaluation_criteria": {
+      "strategy": "sanity_check",
+      "rules": [
+        "section_names == ['T1', 'T2']",
+        "len(first_third_ranking) >= 1 and len(middle_third_ranking) >= 1",
+        "both ranking lists contain the same discovered block_ids returned by the KNN tool",
+        "t2 values within each list are sorted ascending",
+        "all t2 >= 0",
+        "delta == abs(rank_first - rank_middle) for each entry in rank_changes",
+        "all entries in rank_changes have delta > 2"
+      ],
+      "biological_note": "Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample. Compare section-level KNN outputs using the requested canonical sections."
+    },
+    "ground_truth_derivation": "{patient_id} section T1 = [slice0460, slice0530), section T2 = [slice0989, slice1059). Use the KNN workflow twice with all discovered reference blocks. For each block_id, record its rank in both lists and compute abs(rank_first - rank_middle). Entries with delta > 2 form `rank_changes`. T²=0 entries are self-matches when the query block is also present in the reference library.",
+    "rationale": "Comparing full ranked neighbor lists for two standard thirds of the same patient tests whether morphometric similarity is depth-dependent within the cortical volume, exposing potential spatial heterogeneity in lacunar shape.",
+    "capabilities": [
+      "knn_classification",
+      "reference_library_lookup",
+      "block_selection",
+      "multi_query_comparison"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "Use the requested query morphometry CSV(s) already stored under `data/dataset_i` and run KNN without `reference_library`. Do not run feature extraction, preprocessing, or segmentation. Use sample metadata.json files for labels and section metadata, then return exactly the requested JSON fields.",
+        "rationale_for_llm_judge": "Pass if the workflow uses existing morphometry.csv files from the local morphometry library as KNN queries, omits reference_library, uses metadata.json labels/sections, and grounds all reported values in KNN outputs. Fail if it uses 21-slice volume inputs, calls calculate_lacunae_parameters/segmentation/preprocessing, passes deprecated reference_csv/reference_manifest, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "first_third_ranking": "list",
+          "middle_third_ranking": "list",
+          "rank_changes": "list",
+          "section_names": "list"
+        },
+        "rules": [
+          "section_names == ['T1', 'T2']",
+          "len(first_third_ranking) >= 1",
+          "len(middle_third_ranking) >= 1",
+          "[r.get('rank') for r in first_third_ranking] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+          "[r.get('rank') for r in middle_third_ranking] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",
+          "all(r.get('class_label') in ['H', 'O'] and r.get('t2', -1) >= 0 for r in first_third_ranking)",
+          "all(r.get('class_label') in ['H', 'O'] and r.get('t2', -1) >= 0 for r in middle_third_ranking)",
+          "[r.get('t2') for r in first_third_ranking] == sorted([r.get('t2') for r in first_third_ranking])",
+          "[r.get('t2') for r in middle_third_ranking] == sorted([r.get('t2') for r in middle_third_ranking])",
+          "all(((c.get('rank_first') - c.get('rank_middle') == c.get('delta')) or (c.get('rank_middle') - c.get('rank_first') == c.get('delta'))) and c.get('delta', 0) > 2 for c in rank_changes)"
+        ],
+        "python_verification": {},
+        "biological_note": "Expected class should be interpreted from metadata.json class_label for the current {patient_id} query sample. Compare section-level KNN outputs using the requested canonical sections."
+      }
+    }
+  }
+]

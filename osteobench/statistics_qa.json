@@ -1,0 +1,1343 @@
+[
+  {
+    "id": "statistics_qa_1",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_g/T1_S26step3_Z0/T1_S26step3_Z0_original.nii.gz",
+      "data/dataset_g/T1_S7step1_Z0/T1_S7step1_Z0_original.nii.gz",
+      "data/dataset_g/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S53step2_Z0/T2_S53step2_Z0_original.nii.gz",
+      "data/dataset_g/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz"
+    ],
+    "gt_mask_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "question": "Segment the lacunae in the preprocessed volume at {volume_relative_path} and evaluate the result against the ground truth mask at {gt_mask_relative_path}. Report Dice, IoU, precision, and recall for the lacunae class.",
+    "additional_instructions": "Apply the standard lacunar segmentation pipeline to obtain a binary predicted mask. Compare the predicted mask against the provided ground truth using voxel-level overlap metrics. Use label value 1 for the lacunae class.",
+    "output_instructions": "Return a JSON object with keys 'dice' (float), 'iou' (float), 'precision' (float), 'recall' (float), 'sample_id' (string).",
+    "rationale": "Dice and IoU are the standard overlap metrics for binary segmentation. Reporting both precision and recall disaggregates errors into over-detection (low precision) and under-detection (low recall).",
+    "capabilities": [
+      "lacunae_segmentation",
+      "segmentation_evaluation",
+      "overlap_metrics"
+    ],
+    "sample_id": "T1_S7step1_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should segment and evaluate the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ],
+        "forbidden_tools": [
+          "lacunae_group_comparison_boxplot",
+          "volume_intensity_histogram",
+          "volume_metadata_audit"
+        ],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "dice": "float",
+          "iou": "float",
+          "precision": "float",
+          "recall": "float",
+          "sample_id": "string"
+        },
+        "rules": [
+          "0 <= dice <= 1",
+          "0 <= iou <= 1",
+          "0 <= precision <= 1",
+          "0 <= recall <= 1",
+          "iou <= dice",
+          "len(sample_id) > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Acceptable lacunar segmentation in SR-microCT is typically Dice > 0.60. Dice < 0.5 indicates a fundamental failure of the segmentation model on this sample."
+      }
+    }
+  },
+  {
+    "id": "statistics_qa_2",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_g/T1_S26step3_Z0/T1_S26step3_Z0_original.nii.gz",
+      "data/dataset_g/T1_S7step1_Z0/T1_S7step1_Z0_original.nii.gz",
+      "data/dataset_g/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S53step2_Z0/T2_S53step2_Z0_original.nii.gz",
+      "data/dataset_g/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz"
+    ],
+    "gt_mask_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "question": "Segment the lacunae in {volume_relative_path} and compare the prediction against the ground truth at {gt_mask_relative_path}. From the voxel-level confusion matrix, compute the false positive rate (FPR = FP / (FP + TN)) and determine whether the segmentation is biased toward over-detection or under-detection.",
+    "additional_instructions": "Obtain the confusion matrix counts (TP, FP, FN, TN) by comparing the predicted and ground truth masks at the voxel level. Compute FPR = FP / (FP + TN). Compare precision and recall: if precision < recall the model over-detects; if recall < precision it under-detects; otherwise report balanced.",
+    "output_instructions": "Return a JSON object with keys 'TP' (int), 'FP' (int), 'FN' (int), 'TN' (int), 'precision' (float), 'recall' (float), 'fpr' (float), 'bias' (string: 'over_detection' | 'under_detection' | 'balanced').",
+    "rationale": "FPR and the precision-recall imbalance are more interpretable than Dice alone: they reveal whether segmentation errors lead to overestimated or underestimated lacunar density in downstream morphometry.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "segmentation_evaluation",
+      "confusion_matrix"
+    ],
+    "sample_id": "T1_S7step1_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should segment and evaluate the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "TP": "int",
+          "FP": "int",
+          "FN": "int",
+          "TN": "int",
+          "precision": "float",
+          "recall": "float",
+          "fpr": "float",
+          "bias": "string"
+        },
+        "rules": [
+          "TP + FP + FN + TN > 0",
+          "FP + TN > 0",
+          "0 <= fpr <= 1",
+          "abs(fpr - FP / (FP + TN)) < 1e-4",
+          "bias == ('over_detection' if precision < recall else 'under_detection' if recall < precision else 'balanced')"
+        ],
+        "python_verification": {},
+        "biological_note": "In dense cortical bone, over-detection (high FP) inflates lacunar count and density estimates. Under-detection (high FN) suppresses morphometric parameters toward smaller, less numerous lacunae."
+      }
+    },
+    "segmentation_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz"
+  },
+  {
+    "id": "statistics_qa_3",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_g/T1_S26step3_Z0/T1_S26step3_Z0_original.nii.gz",
+      "data/dataset_g/T1_S7step1_Z0/T1_S7step1_Z0_original.nii.gz",
+      "data/dataset_g/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S53step2_Z0/T2_S53step2_Z0_original.nii.gz",
+      "data/dataset_g/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz"
+    ],
+    "gt_mask_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "question": "Segment the lacunae in {volume_relative_path} and check whether the predicted mask contains any wrong label values, integer labels present in the prediction but absent in the ground truth at {gt_mask_relative_path}.",
+    "additional_instructions": "After segmentation, identify all unique non-zero label values in both the predicted and ground truth masks. Any label present in the prediction but not in the ground truth is wrong. Report both the ground truth label set and the wrong label set.",
+    "output_instructions": "Return a JSON object with keys 'active_ground_truth_labels' (list of int), 'wrong_prediction_labels' (list of int), 'has_hallucinations' (bool), 'n_wrong_labels' (int).",
+    "rationale": "wrong labels reveal systematic model failures: a segmentation predicting crack labels (value 2) on a pure-lacunae volume indicates class confusion or a mismatched model configuration that must be caught before morphometric analysis.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "segmentation_evaluation",
+      "artifact_detection"
+    ],
+    "sample_id": "T1_S7step1_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should segment and evaluate the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "volume_metadata_audit",
+          "volume_intensity_histogram"
+        ],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "active_ground_truth_labels": "list of int",
+          "wrong_prediction_labels": "list of int",
+          "has_hallucinations": "bool",
+          "n_wrong_labels": "int"
+        },
+        "rules": [
+          "has_hallucinations == (len(wrong_prediction_labels) > 0)",
+          "len(active_ground_truth_labels) > 0",
+          "n_wrong_labels == len(wrong_prediction_labels)"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    },
+    "segmentation_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz"
+  },
+  {
+    "id": "statistics_qa_4",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_g/T1_S26step3_Z0/T1_S26step3_Z0_original.nii.gz",
+      "data/dataset_g/T1_S7step1_Z0/T1_S7step1_Z0_original.nii.gz",
+      "data/dataset_g/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz",
+      "data/dataset_g/T2_S53step2_Z0/T2_S53step2_Z0_original.nii.gz",
+      "data/dataset_g/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz"
+    ],
+    "gt_mask_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "question": "Segment the lacunae in {volume_relative_path} and compute the specificity of the segmentation against {gt_mask_relative_path}: the fraction of true background voxels correctly excluded from the prediction (TN / (TN + FP)).",
+    "additional_instructions": "Compare the produced and ground truth masks voxel-by-voxel to obtain TN and FP counts for the lacunae class (label 1). Compute specificity = TN / (TN + FP). Verify consistency with the raw counts.",
+    "output_instructions": "Return a JSON object with keys 'specificity' (float), 'TN' (int), 'FP' (int), 'sample_id' (string).",
+    "rationale": "Specificity is the most informative metric for class-imbalanced segmentation where background dominates the volume. High global accuracy can coexist with low specificity if FP voxels are numerous but individually small.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "segmentation_evaluation",
+      "confusion_matrix"
+    ],
+    "sample_id": "T1_S7step1_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should segment and evaluate the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "specificity": "float",
+          "TN": "int",
+          "FP": "int",
+          "sample_id": "string"
+        },
+        "rules": [
+          "0 <= specificity <= 1",
+          "TN + FP > 0",
+          "abs(specificity - TN / (TN + FP)) < 1e-4",
+          "TN >= 0",
+          "FP >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Specificity should be very high (>0.99) for lacunar segmentation because background voxels greatly outnumber lacunae. Low specificity means the model floods the bone matrix with false detections."
+      }
+    },
+    "segmentation_relative_path": "data/dataset_g/{sample_id}/segmentation/{sample_id}_segmented.nii.gz"
+  },
+  {
+    "id": "statistics_qa_5",
+    "data_type": "multiple_volumes",
+    "dataset_relative_path": "data/dataset_h/",
+    "question": "Segment the lacunae in all samples in {dataset_relative_path} and evaluate each prediction against its ground truth mask. Report the cohort-level mean and standard deviation of Dice and IoU for the lacunae class, and identify the sample with the lowest Dice score.",
+    "additional_instructions": "This cohort is intentionally one sample per patient. For each sample subdirectory directly under {dataset_relative_path}, do not pass the directory itself to segmentation. Use the raw NIfTI file inside it named '<sample_id>_original.nii.gz' as the segmentation image_path. Locate the matching read-only ground truth mask at '<sample_dir>/segmentation/<sample_id>_segmented.nii.gz'. Write predicted masks only to a writable session output folder outside data, preserving sample identity, then evaluate all 6 prediction-GT pairs in a single batch. Aggregate Dice and IoU across samples. Identify the worst-performing sample by Dice.",
+    "output_instructions": "Return a JSON object with keys 'mean_dice' (float), 'std_dice' (float), 'mean_iou' (float), 'std_iou' (float), 'worst_sample_id' (string), 'worst_dice' (float), 'n_samples' (int).",
+    "rationale": "Cohort-level evaluation reveals whether the segmentation pipeline generalizes across samples. A single high-Dice sample can mask systematic failures on outlier cases if only per-sample evaluation is reported.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "segmentation_evaluation",
+      "batch_processing",
+      "descriptive_statistics"
+    ],
+    "sample_id": "dataset_h",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake",
+          "code_sandbox"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should segment and evaluate the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "calculate_segmentation_metrics"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 6
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "mean_dice": "float",
+          "std_dice": "float",
+          "mean_iou": "float",
+          "std_iou": "float",
+          "worst_sample_id": "string",
+          "worst_dice": "float",
+          "n_samples": "int"
+        },
+        "rules": [
+          "0 <= mean_dice <= 1",
+          "std_dice >= 0",
+          "0 <= mean_iou <= 1",
+          "std_iou >= 0",
+          "mean_iou <= mean_dice",
+          "worst_dice <= mean_dice",
+          "n_samples == 6"
+        ],
+        "python_verification": {},
+        "biological_note": "A cohort std_dice above 0.25 suggests highly sample-dependent segmentation quality. The worst-performing sample should be inspected for acquisition artifacts or preprocessing failures before morphometric analysis."
+      }
+    }
+  },
+  {
+    "id": "statistics_qa_6",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": false,
+    "question": "Evaluate leave-one-out (LOO) block-level classification accuracy for the section T2 of the prebuilt step-0 section T2 leave-one-out CSV dataset. Use each section T2 query CSV once as the query against the full local morphometry library, exclude all returned neighbors from the same patient_id after filtering to section T2, and record the predicted disease class from the weighted vote over the remaining neighbors. Report block-level accuracy as the fraction of correctly classified section T2 queries. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Return a JSON object with keys `section_name` (string, 'T2'), `step` (int, 0), `per_block_results` (list with one object per available section T2 query block, each with `block_id` (string), `true_class` (string), `predicted_class` (string), `correct` (boolean), `confidence` (float, 3 decimal places)) and `accuracy` (float, 3 decimal places).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query in the local morphometry library by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. For each query, use the non-self weighted class vote returned by the workflow or recompute it from the returned matches. True labels come from the LOO dataset manifest. Accuracy = number of correct predictions / number of step-0 section T2 query CSVs. Both query and reference samples are restricted to step == 0.",
+    "rationale": "LOO accuracy is the standard block-level evaluation metric for a small labeled reference library. The agent must perform the leave-one-out loop across the available section T2 blocks and aggregate the per-block predictions.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "accuracy_computation"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "per_block_results": "list",
+          "accuracy": "float",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(per_block_results) >= 1",
+          "all(r.get('true_class') in ['H', 'O'] for r in per_block_results)",
+          "all(r.get('predicted_class') in ['H', 'O'] for r in per_block_results)",
+          "all(0.0 <= r.get('confidence', -1) <= 1.0 for r in per_block_results)",
+          "abs(accuracy - sum(r.get('correct') for r in per_block_results) / len(per_block_results)) < 1e-3",
+          "0.0 <= accuracy <= 1.0"
+        ],
+        "python_verification": {},
+        "biological_note": "A balanced class split makes 0.5 a useful random-guessing reference point. On this small (~10-block) reference library, accuracy meaningfully above 0.5 is a useful pipeline sanity check but should not be read as a validated clinical accuracy estimate; a much larger cohort would be needed to claim that Hotelling T² captures real morphometric separation between healthy and osteoporotic lacunar populations."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_7",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": false,
+    "question": "Evaluate leave-one-out block-level classification on the section T2 query CSVs of the prebuilt step-0 section T2 leave-one-out CSV dataset. From the resulting true/predicted class pairs, compute precision, recall, and F1-score separately for Healthy (H) and Osteoporotic (O), plus macro-averaged F1. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON, and no method-parameter snippets outside the JSON. Return keys `section_name` (string, 'T2'), `step` (int, 0) and `metrics` (list of 3 objects). The first two objects are per-class entries with `class_label` (string, 'H' or 'O'), `precision` (float, 3 decimal places), `recall` (float, 3 decimal places), `f1` (float, 3 decimal places), `support` (int). The third object has `class_label` = 'macro', `f1` (float, 3 decimal places), `precision` = null, `recall` = null, and `support` equal to the total number of section T2 query blocks.",
+    "ground_truth_derivation": "Use the same per-block LOO predictions computed from the prebuilt step-0 section T2 CSV dataset as the accuracy task. Compute TP, FP, and FN per class from the resulting confusion table. Per-class support is the number of step-0 section T2 query CSVs with that true class; macro F1 is the mean of F1(H) and F1(O). The leave-one-out neighbor set excludes every reference match with the same patient_id as the query after filtering to step-0 section T2. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Precision and recall disaggregate accuracy by class and expose asymmetric error patterns that overall accuracy masks. Computable from the same per-block LOO queries as statistics_qa_6 with no additional code.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "precision_recall_f1"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "metrics": "list",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(metrics) == 3",
+          "metrics[0]['class_label'] in ['H', 'O'] and metrics[1]['class_label'] in ['H', 'O'] and metrics[0]['class_label'] != metrics[1]['class_label'] and metrics[2]['class_label'] == 'macro'",
+          "metrics[2]['support'] == metrics[0]['support'] + metrics[1]['support']",
+          "metrics[0]['support'] + metrics[1]['support'] == metrics[2]['support']",
+          "all(0.0 <= m[k] <= 1.0 for m in metrics[:2] for k in ['precision', 'recall', 'f1'])",
+          "metrics[2]['precision'] == None and metrics[2]['recall'] == None and 0.0 <= metrics[2]['f1'] <= 1.0",
+          "abs(metrics[2]['f1'] - (metrics[0]['f1'] + metrics[1]['f1']) / 2) < 1e-3"
+        ],
+        "python_verification": {},
+        "biological_note": "In a class-balanced library, recall for the Osteoporotic class is clinically more critical: missing an osteoporotic block has greater diagnostic cost than a false positive. With only ~10 reference blocks, treat any precision/recall asymmetry here as a pipeline diagnostic rather than a clinically validated finding about disease morphometry."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_8",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": false,
+    "question": "For each section T2 query CSV in the prebuilt step-0 section T2 leave-one-out CSV dataset, perform leave-one-out retrieval and compute precision at k=1, k=2, and k=3, defined as the fraction of the first k non-self retrieved blocks that share the query CSV's true class. Report the mean precision@k across all section T2 query CSVs. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Return a JSON object with keys `section_name` (string, 'T2'), `step` (int, 0), `per_block_precision` (list with one object per section T2 query block, each with `block_id` (string), `true_class` (string), `precision_at_1` (float, 3 decimal places), `precision_at_2` (float, 3 decimal places), `precision_at_3` (float, 3 decimal places)) and `mean_precision` (object with keys `at_1`, `at_2`, `at_3`, each a float rounded to 3 decimal places).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. For each query, take the first 1, 2, and 3 non-self matches, subject to the available ranked matches, and count class-label matches with the query's true class. Mean over all step-0 section T2 queries. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Precision@k evaluates retrieval quality at different depths of the ranked list and complements overall accuracy. Derivable directly from the same top_block_matches output used for classification — no additional code required.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "precision_at_k"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "per_block_precision": "list",
+          "mean_precision": "object",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(per_block_precision) >= 1",
+          "all(0.0 <= p['precision_at_1'] <= 1.0 and 0.0 <= p['precision_at_2'] <= 1.0 and 0.0 <= p['precision_at_3'] <= 1.0 for p in per_block_precision)",
+          "all(p['precision_at_1'] in [0.0, 1.0] for p in per_block_precision)",
+          "abs(mean_precision['at_1'] - sum(p['precision_at_1'] for p in per_block_precision) / len(per_block_precision)) < 1e-3",
+          "abs(mean_precision['at_2'] - sum(p['precision_at_2'] for p in per_block_precision) / len(per_block_precision)) < 1e-3",
+          "abs(mean_precision['at_3'] - sum(p['precision_at_3'] for p in per_block_precision) / len(per_block_precision)) < 1e-3"
+        ],
+        "python_verification": {},
+        "biological_note": "Precision@1 equals the LOO nearest-neighbor accuracy. A drop from precision@1 to deeper-neighbor precision would be consistent with class mixing among more distant neighbors, but with only ~10 reference blocks this is illustrative of pipeline behavior, not a validated estimate of morphometric overlap between healthy and osteoporotic populations."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_9",
+    "data_type": "all_blocks",
+    "dataset": "dataset_k",
+    "requires_sandbox": false,
+    "question": "For each section T2 query CSV in the prebuilt step-0 section T2 leave-one-out CSV dataset, run leave-one-out retrieval and separate the non-self Hotelling T² distances into intra-class matches (same true disease label as the query) and inter-class matches (opposite label). Compute the mean intra-class T² and mean inter-class T² per query and globally. Is the global mean intra-class T² lower than the global mean inter-class T²? Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON, and no method-parameter snippets outside the JSON. Return keys `section_name` (string, 'T2'), `step` (int, 0), `per_block` (list with one object per section T2 query block, each with `block_id` (string), `true_class` (string), `mean_intra_t2` (float, 4 decimal places), `mean_inter_t2` (float, 4 decimal places)), `global_mean_intra_t2` (float, 4 decimal places), `global_mean_inter_t2` (float, 4 decimal places), and `intra_lower_than_inter` (boolean).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. Partition each query's non-self matches by whether the reference class equals the query true class. Compute per-query group means and global averages across the per-query means. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Comparing intra- vs inter-class T² distances quantifies the discriminative power of the Hotelling T² metric independently from any classification threshold. Requires only tool calls and arithmetic — no new code.",
+    "capabilities": [
+      "knn_classification",
+      "intra_inter_class_distance",
+      "metric_evaluation"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "per_block": "list",
+          "global_mean_intra_t2": "float",
+          "global_mean_inter_t2": "float",
+          "intra_lower_than_inter": "bool",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(per_block) >= 1",
+          "all(b['true_class'] in ['H', 'O'] for b in per_block)",
+          "all(b['mean_intra_t2'] >= 0 and b['mean_inter_t2'] >= 0 for b in per_block)",
+          "global_mean_intra_t2 >= 0 and global_mean_inter_t2 >= 0",
+          "intra_lower_than_inter == (global_mean_intra_t2 < global_mean_inter_t2)"
+        ],
+        "python_verification": {},
+        "biological_note": "If Hotelling T² is sensitive to morphometric differences between healthy and osteoporotic lacunae, intra-class distances would tend to be lower than inter-class distances on this reference set. With only ~10 blocks this is a pipeline sanity check, not sufficient evidence to conclude the disease classes are, or are not, well separated in general."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_10",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": false,
+    "question": "Run leave-one-out classification for all section T2 query CSVs in the prebuilt step-0 section T2 leave-one-out CSV dataset. For each block, record the classification confidence, defined as the fraction of total non-self similarity weight assigned to the predicted class. Sort predictions by confidence descending and compare accuracy for the higher-confidence half against the lower-confidence half. Is the classifier better calibrated at higher confidence? Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON, and no file path standing in for the requested object. If you save an intermediate JSON file, still print the complete JSON object as the final answer. Return keys `section_name` (string, 'T2'), `step` (int, 0), `results` (list with one object per section T2 query block sorted by confidence descending, each with `block_id` (string), `true_class` (string), `predicted_class` (string), `confidence` (float, 3 decimal places), `correct` (boolean)), `accuracy_high_confidence` (float, 3 decimal places), and `accuracy_low_confidence` (float, 3 decimal places).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. Confidence = weight(predicted class) / sum(all non-self class weights). Sort by confidence descending, split the list into two halves, and compute mean correctness in each half. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Calibration analysis checks whether the model's confidence score is informative beyond the binary prediction. Derivable from the same LOO runs without any additional code.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "confidence_calibration"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "results": "list",
+          "accuracy_high_confidence": "float",
+          "accuracy_low_confidence": "float",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(results) >= 1",
+          "all(r['true_class'] in ['H', 'O'] and r['predicted_class'] in ['H', 'O'] for r in results)",
+          "all(0.0 <= r['confidence'] <= 1.0 for r in results)",
+          "len(results) < 2 or all(results[i]['confidence'] >= results[i+1]['confidence'] for i in range(len(results)-1))",
+          "0.0 <= accuracy_high_confidence <= 1.0",
+          "0.0 <= accuracy_low_confidence <= 1.0"
+        ],
+        "python_verification": {},
+        "biological_note": "A well-calibrated classifier assigns higher confidence to correct predictions. With only ~10 reference blocks, treat any observed gap between high- and low-confidence accuracy as a pipeline sanity check rather than a validated calibration estimate."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_11",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": true,
+    "question": "Using leave-one-out classification results for all section T2 query CSVs in the prebuilt step-0 section T2 leave-one-out CSV dataset, build the 2x2 confusion matrix for H/O binary classification and save it as an annotated heatmap PNG. Define Osteoporotic (O) as the positive class. Report TP, TN, FP, and FN. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Save `confusion_matrix.png` to the working directory. Return a JSON object with keys `section_name` (string, 'T2'), `step` (int, 0), `tp` (int), `tn` (int), `fp` (int), `fn` (int), and `plot_path` (string, absolute path to the PNG).",
+    "ground_truth_derivation": "Use the per-block LOO predictions computed from the prebuilt step-0 section T2 CSV dataset, where step-0 section T2 is [slice0989, slice1059). Assign O=positive. TP = predicted O and true O; TN = predicted H and true H; FP = predicted O and true H; FN = predicted H and true O. The leave-one-out neighbor set excludes every reference match with the same patient_id as the query after filtering to step-0 section T2. Both query and reference samples are restricted to step == 0.",
+    "rationale": "A confusion matrix heatmap makes classification errors interpretable at a glance and separates the two error types (FP and FN). Generating the annotated plot requires matplotlib and file I/O, which require the sandbox.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "confusion_matrix",
+      "visualization"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".png"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "tp": "int",
+          "tn": "int",
+          "fp": "int",
+          "fn": "int",
+          "plot_path": "string",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "tp >= 0 and tn >= 0 and fp >= 0 and fn >= 0",
+          "tp + tn + fp + fn >= 1",
+          "plot_path.endswith('confusion_matrix.png')"
+        ],
+        "python_verification": {},
+        "biological_note": "In bone disease classification, FN (missed osteoporotic blocks classified as healthy) is generally considered the more costly error type. With only ~10 available blocks, this confusion matrix is useful for checking that the pipeline reports each case correctly, not as a clinically validated error-rate estimate."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_12",
+    "data_type": "all_blocks",
+    "dataset": "dataset_k",
+    "requires_sandbox": true,
+    "question": "For all section T2 query CSVs in the prebuilt step-0 section T2 leave-one-out CSV dataset, collect the non-self Hotelling T² distances from leave-one-out retrieval and split them into intra-class pairs and inter-class pairs. Plot a side-by-side boxplot of the two T² distributions with individual data points overlaid, and save it as a PNG. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Save `t2_boxplot.png` to the working directory. Return a JSON object with keys `section_name` (string, 'T2'), `step` (int, 0), `n_intra_pairs` (int), `n_inter_pairs` (int), `median_intra_t2` (float, 4 decimal places), `median_inter_t2` (float, 4 decimal places), and `plot_path` (string).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. Pool all non-self matches across queries, assign each distance to intra-class or inter-class using the query and reference labels, and compute medians on the pooled sets. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Visualising the T² distribution for intra- vs inter-class pairs directly shows whether the metric is geometrically discriminative. The plot with overlaid data points requires seaborn/matplotlib and the sandbox.",
+    "capabilities": [
+      "knn_classification",
+      "intra_inter_class_distance",
+      "visualization",
+      "boxplot"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".png"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_intra_pairs": "int",
+          "n_inter_pairs": "int",
+          "median_intra_t2": "float",
+          "median_inter_t2": "float",
+          "plot_path": "string",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "n_intra_pairs > 0 and n_inter_pairs > 0",
+          "n_intra_pairs + n_inter_pairs > 0",
+          "median_intra_t2 >= 0 and median_inter_t2 >= 0",
+          "plot_path.endswith('t2_boxplot.png')"
+        ],
+        "python_verification": {},
+        "biological_note": "Separation between the intra-class and inter-class T² distributions, if observed, is consistent with Hotelling T² being a useful morphometric dissimilarity measure. With only ~10 reference blocks, this plot should be read as a pipeline sanity check rather than a validated claim about class separability."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_13",
+    "data_type": "all_blocks_loo",
+    "dataset": "dataset_k",
+    "requires_sandbox": true,
+    "question": "Using leave-one-out results for all section T2 query CSVs in the prebuilt step-0 section T2 leave-one-out CSV dataset, treat the fraction of non-self similarity weight assigned to class O as a continuous decision score. Plot the ROC curve for O-vs-H classification, shade the area under the curve (AUC), and save the plot as a PNG. Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Save `roc_curve.png` to the working directory. The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON, and no method-parameter snippets outside the JSON. Include the saved PNG location only as the `plot_path` value. Return keys `section_name` (string, 'T2'), `step` (int, 0), `auc` (float, 3 decimal places), `n_positive` (int, number of O query blocks), `n_negative` (int, number of H query blocks), and `plot_path` (string).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query by calling the KNN tool with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. Score for O = weight(O) / total non-self class weight. True label is 1 for O and 0 for H. Compute ROC/AUC from the resulting score-label pairs. Both query and reference samples are restricted to step == 0.",
+    "rationale": "The ROC curve and AUC summarise classifier performance across all possible thresholds and are the standard metric for binary classifiers on balanced datasets. Plot generation and sklearn usage require the sandbox.",
+    "capabilities": [
+      "knn_classification",
+      "leave_one_out_evaluation",
+      "roc_auc",
+      "visualization"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".png"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "auc": "float",
+          "n_positive": "int",
+          "n_negative": "int",
+          "plot_path": "string",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "0.0 <= auc <= 1.0",
+          "n_positive > 0",
+          "n_negative > 0",
+          "plot_path.endswith('roc_curve.png')"
+        ],
+        "python_verification": {},
+        "biological_note": "AUC = 0.5 corresponds to a random classifier; AUC = 1.0 is perfect separation. With only ~10 reference blocks (5 per class), the AUC estimated here has very wide uncertainty and should be treated as a pipeline sanity check of the scoring/ranking logic, not a validated estimate of real-world discriminative performance."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_14",
+    "data_type": "all_blocks",
+    "dataset": "dataset_k",
+    "requires_sandbox": true,
+    "question": "Using the section T2 query CSVs from the prebuilt leave-one-out dataset, compute for each morphometric feature the absolute difference between the Healthy-class mean and the Osteoporotic-class mean. Plot a horizontal bar chart of these differences sorted descending and save it as a PNG. Which feature discriminates healthy from osteoporotic blocks the most? Use the prebuilt LOO dataset {leave_one_out_dataset_relative_path} as the query set.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Save `feature_discrimination.png` to the working directory. The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON. Build `feature_ranking` from every numeric morphometric measurement column present in the query CSVs after excluding identifier, metadata, and label columns; do not omit a numeric measurement column simply because its difference is small or zero. Include the saved PNG location only as the `plot_path` value. Return keys `section_name` (string, 'T2'), `step` (int, 0), `top_feature` (string, feature name with the largest abs_diff), `top_abs_diff` (float, 4 decimal places), `feature_ranking` (list sorted by abs_diff descending, each with `feature` (string) and `abs_diff` (float, 4 decimal places)), and `plot_path` (string).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Compute each block's mean feature vector from the prebuilt per-lacuna CSV, group step-0 section T2 queries by disease label, compute per-feature H and O means, compute absolute differences, and take the argmax. The leave-one-out neighbor set excludes every reference match with the same patient_id as the query after filtering to step-0 section T2. Both query and reference samples are restricted to step == 0.",
+    "rationale": "Feature-level H vs O mean differences reveal which morphometric descriptors most separate the two disease classes, informing biological interpretation and future feature selection. The computation and bar chart require pandas and matplotlib in the sandbox.",
+    "capabilities": [
+      "feature_vector_comparison",
+      "class_discrimination",
+      "feature_importance",
+      "visualization"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".png"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "top_feature": "string",
+          "top_abs_diff": "float",
+          "feature_ranking": "list",
+          "plot_path": "string",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(feature_ranking) == 22",
+          "len(feature_ranking) < 2 or all(feature_ranking[i]['abs_diff'] >= feature_ranking[i+1]['abs_diff'] for i in range(len(feature_ranking)-1))",
+          "top_feature == feature_ranking[0]['feature']",
+          "abs(top_abs_diff - feature_ranking[0]['abs_diff']) < 1e-4",
+          "all(r['abs_diff'] >= 0 for r in feature_ranking)",
+          "all(r['feature'] for r in feature_ranking)",
+          "plot_path.endswith('feature_discrimination.png')"
+        ],
+        "python_verification": {},
+        "biological_note": "Volume, Surface Area, and Major Axis are plausible candidates for the largest H-vs-O differences, since osteoporotic lacunae are often reported as larger and more irregular in the literature; orientation indices and Voxel Size are plausible candidates for the smallest differences. With only ~10 reference blocks, treat this ranking as illustrative of the pipeline's output, not a validated finding about which features discriminate disease state."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  },
+  {
+    "id": "statistics_qa_15",
+    "data_type": "all_blocks",
+    "dataset": "dataset_k",
+    "requires_sandbox": true,
+    "question": "Compute a patient-level leave-one-out Hotelling T² distance matrix among all section T2 query CSVs in {leave_one_out_dataset_relative_path}. Rows and columns should use the same block order, but distances for the query block itself and any same-patient reference blocks must be null because those neighbors are excluded by LOO. Plot the matrix as an annotated heatmap with Healthy blocks first and Osteoporotic blocks second, alphabetically within each class, draw dashed separator lines between H and O groups, and save it as a PNG.",
+    "additional_instructions": "Use the leave-one-out query dataset at {leave_one_out_dataset_relative_path}. It is already composed of step-0 section T2 morphometry CSV files plus {leave_one_out_manifest_relative_path}; do not create it during the task and do not re-extract morphometry. ID convention: `patient_id` is the full manifest value before `_step`, including the sample suffix after the first underscore, for example `FHH13_S18`, `FHHm17_S1`, `FHO13_S3`, `FHO6_S8`, `T1_S26`, `T1_S7`, `T2_S41`, `T2_S53`, `T4_S31`, and `T5_S33`; never truncate it to prefixes such as `FHH13`, `FHHm17`, `FHO13`, `FHO6`, `T1`, `T2`, `T4`, or `T5`. Use the default labeled KNN reference library; do not pass `reference_library`, deprecated `reference_csv`, or deprecated `reference_manifest`. Section T2 is the second/middle third with half-open slice range [slice0989, slice1059): include slices 989 through 1058 and exclude 1059. For every query listed in the LOO dataset manifest, call `find_similar_patients_by_block_hotelling_t2` with that query CSV, `top_k` large enough for the requested metric, `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` set to the query sample's `patient_id` from the manifest. This is patient-level leave-one-out for step-0 T2 blocks: the tool must exclude the patient under analysis, not only the identical sample_identifier. Compute predictions, retrieval metrics, distance summaries, and plots only from the returned non-self-patient step-0 T2 neighbor set. True labels come from the LOO dataset manifest `class_label`. Do not call `calculate_lacunae_parameters`, `segment_microscopy`, or `preprocess_microscopy_tiff`.",
+    "output_instructions": "Save `t2_distance_matrix.png` to the working directory. The final answer must be exactly one valid JSON object and nothing else: no Markdown, no code fence, no prose before or after the JSON, and no partial substitute for the requested matrix. The complete `matrix` and `block_order` must be printed inline in the final JSON object; include the saved PNG location only as the `plot_path` value. Return keys `section_name` (string, 'T2'), `step` (int, 0), `matrix` (square list of lists, row = query block, column = reference block, valid distances as floats rounded to 2 decimals and excluded same-patient/self entries as null), `block_order` (list of block IDs used for rows and columns), and `plot_path` (string).",
+    "ground_truth_derivation": "Use each CSV listed in {leave_one_out_manifest_relative_path}, where step-0 section T2 is [slice0989, slice1059). Then run one KNN query per step-0 section T2 query with enough neighbors to cover the available step-0 section T2 reference blocks, using `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}` and `exclude_patient_id` equal to the query patient_id. Assemble the matrix using the reported block_order for rows and columns; entries that are excluded by patient-level LOO, including the diagonal and same-patient comparisons, should be null rather than treated as valid distances. Order rows and columns with H blocks first and O blocks second. Both query and reference samples are restricted to step == 0.",
+    "rationale": "The full pairwise T² matrix provides a global view of inter-block morphometric relationships and visually reveals class structure and within-class heterogeneity. Assembling the matrix, reordering it, and generating the seaborn heatmap all require the sandbox.",
+    "capabilities": [
+      "knn_classification",
+      "pairwise_distance_matrix",
+      "visualization",
+      "heatmap"
+    ],
+    "volume_relative_path": "data/dataset_k",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "quantitative_imaging_analysis",
+        "necessary_routes": [
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should read {leave_one_out_manifest_relative_path}, use the listed step-0 T2 query CSV files directly, call find_similar_patients_by_block_hotelling_t2 without `reference_library`, with `reference_filters={'section_name': 'T2', 'slice_start': 989, 'slice_end': 1059, 'step': 0}`, and `exclude_patient_id` equal to the full query manifest patient_id, not a filename prefix, use manifest class_label values as true labels, aggregate the returned KNN outputs, and return exactly the requested JSON fields. Visualization tasks should also create the requested PNG artifact.",
+        "rationale_for_llm_judge": "Pass if the answer is grounded in the prebuilt step-0 T2 LOO CSV dataset and KNN outputs, calls the KNN tool with metadata filters for section_name T2, slice_start 989, slice_end 1059, step 0, excludes the query patient_id through the tool, uses manifest labels, computes aggregates from the returned matches, and creates required PNG artifacts. Fail if it scans the whole library as the query dataset, uses non-step0 references, includes non-T2 matches, excludes only the exact sample while retaining same-patient neighbors, re-extracts morphometry, uses volumes/segmentations, fabricates values, or omits required fields."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "forbidden_tools": [
+          "calculate_lacunae_parameters",
+          "segment_microscopy",
+          "preprocess_microscopy_tiff",
+          "calculate_segmentation_metrics"
+        ],
+        "required_tool_sequence": [
+          "find_similar_patients_by_block_hotelling_t2"
+        ],
+        "enforce_expected_tool_set": false
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".png"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "matrix": "list",
+          "block_order": "list",
+          "plot_path": "string",
+          "section_name": "string",
+          "step": "int"
+        },
+        "rules": [
+          "step == 0",
+          "section_name == 'T2'",
+          "len(matrix) == len(block_order) >= 1",
+          "all(len(row) == len(block_order) for row in matrix)",
+          "all(matrix[i][i] is None for i in range(len(block_order)))",
+          "all(value is None or value >= 0 for row in matrix for value in row)",
+          "plot_path.endswith('t2_distance_matrix.png')"
+        ],
+        "python_verification": {},
+        "biological_note": "If Hotelling T² is sensitive to disease-related morphometric differences, the HxH and OxO sub-blocks would be expected to look darker (lower T²) than the off-diagonal HxO/OxH sub-blocks. With only ~10 blocks in this benchmark, treat this heatmap as a pipeline sanity check rather than a validated claim about within- vs between-class morphometric cohesion."
+      }
+    },
+    "section_name": "T2",
+    "leave_one_out_dataset_relative_path": "data/dataset_k",
+    "leave_one_out_manifest_relative_path": "data/dataset_k/manifest.json",
+    "step": 0,
+    "tool_call_requirements": {
+      "reference_filters": {
+        "section_name": "T2",
+        "slice_start": 989,
+        "slice_end": 1059,
+        "step": 0
+      },
+      "exclude_patient_id_source": "full manifest.patient_id for the current query CSV, e.g. T1_S26 not T1"
+    }
+  }
+]

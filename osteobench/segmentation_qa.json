@@ -1,0 +1,823 @@
+[
+  {
+    "id": "segmentation_qa_1",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Run the lacunar segmentation pipeline on the preprocessed volume at {volume_relative_path}. Report the total number of detected lacunae.",
+    "additional_instructions": "Apply the full standard preprocessing (normalize → Gaussian sigma=1 → Otsu) before running the U-Net segmentation. Count 3D connected components in the lacunar mask.",
+    "output_instructions": "Return a JSON object with keys 'n_lacunae' (int), 'sample_id' (string), 'preprocessing_applied' (string).",
+    "rationale": "Lacunar count is the most basic output of the segmentation pipeline and the foundation for all morphometric analysis.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "connected_component_analysis",
+      "unet_inference"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "n_lacunae": "int",
+          "sample_id": "string",
+          "preprocessing_applied": "string"
+        },
+        "rules": [
+          "n_lacunae > 0",
+          "len(sample_id) > 0",
+          "len(preprocessing_applied) > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "A typical cortical bone ROI (~1.6 μm voxel size) contains approximately 1,000-10,000 lacunae, depending on ROI volume. Counts far outside this range warrant inspection."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_2",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Run lacunar segmentation on {volume_relative_path}. Compute the total lacunar volume as a fraction of the total bone volume (Lc.V/BV). Report in percentage.",
+    "additional_instructions": "Total lacunar volume = sum of all voxels labeled as lacunae. Total bone volume = sum of voxels in the bone mask (Otsu-thresholded). Both should use the same voxel size. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'lacunar_volume_um3' (float), 'bone_volume_um3' (float), 'lc_v_bv_percent' (float).",
+    "rationale": "Lc.V/BV is a standard histomorphometric parameter; plausible range check catches gross segmentation errors.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "bone_mask_extraction",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu",
+          "evaluate_math_expression"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "lacunar_volume_um3": "float",
+          "bone_volume_um3": "float",
+          "lc_v_bv_percent": "float"
+        },
+        "rules": [
+          "lacunar_volume_um3 > 0",
+          "lacunar_volume_um3 < bone_volume_um3",
+          "0 < lc_v_bv_percent < 10"
+        ],
+        "python_verification": {},
+        "biological_note": "Lacunar volume fraction (Lc.V/BV) in cortical bone is typically 0.5-2%. Values above roughly 5% suggest over-segmentation."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_3",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "For each detected lacuna in {volume_relative_path}, compute its volume in μm³ (using voxel size). Report the distribution: min, max, mean, median, std, and 95th percentile.",
+    "additional_instructions": "Compute volume per connected component. Convert from voxels to μm³ using voxel_size³. Filter out components < 10 voxels (likely noise). Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'min_um3' (float), 'max_um3' (float), 'mean_um3' (float), 'median_um3' (float), 'std_um3' (float), 'p95_um3' (float), 'n_lacunae_filtered' (int).",
+    "rationale": "Lacunar volume distribution is a primary morphometric output; range validation provides a label-free quality check.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "connected_component_analysis",
+      "scalar_calculation",
+      "voxel_size_retrieval"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "min_um3": "float",
+          "max_um3": "float",
+          "mean_um3": "float",
+          "median_um3": "float",
+          "std_um3": "float",
+          "p95_um3": "float",
+          "n_lacunae_filtered": "int"
+        },
+        "rules": [
+          "min_um3 > 0",
+          "min_um3 < median_um3 < max_um3",
+          "mean_um3 > 0",
+          "std_um3 >= 0",
+          "p95_um3 <= max_um3",
+          "n_lacunae_filtered > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Individual osteocyte lacunae are typically 200-600 μm³. Mean values well outside this range suggest calibration or segmentation issues."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_4",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Compute the Z-axis distribution of detected lacunae in {volume_relative_path}. Divide the volume into 10 equal Z-bins. Report the lacunar count per bin.",
+    "additional_instructions": "Assign each lacuna to a bin based on its centroid Z-coordinate. Report counts as a list of 10 integers and a coefficient of variation across bins.",
+    "output_instructions": "Return a JSON object with keys 'counts_per_bin' (list of 10 ints), 'cv_z_distribution' (float), 'total_lacunae' (int).",
+    "rationale": "Uniform Z-distribution of lacunae is expected in a homogeneous cortical ROI; non-uniformity may indicate acquisition or preprocessing artifacts.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "spatial_distribution_analysis",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "counts_per_bin": "list of 10 ints",
+          "cv_z_distribution": "float",
+          "total_lacunae": "int"
+        },
+        "rules": [
+          "len(counts_per_bin) == 10",
+          "sum(counts_per_bin) == total_lacunae",
+          "min(counts_per_bin) >= 0",
+          "cv_z_distribution >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_7",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Compute the lacunar number density (N.Lc/BV) for {volume_relative_path}: number of lacunae per mm³ of bone volume.",
+    "additional_instructions": "N.Lc/BV = n_lacunae / bone_volume_mm3. Convert bone volume from voxels to mm³ using voxel_size. Report in lacunae/mm³. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'n_lacunae' (int), 'bone_volume_mm3' (float), 'n_lc_bv' (float).",
+    "rationale": "N.Lc/BV is a standard parameter in bone histomorphometry and the primary readout of osteocyte density.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "bone_mask_extraction",
+      "scalar_calculation",
+      "voxel_size_retrieval"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu",
+          "evaluate_math_expression"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "n_lacunae": "int",
+          "bone_volume_mm3": "float",
+          "n_lc_bv": "float"
+        },
+        "rules": [
+          "n_lacunae > 0",
+          "bone_volume_mm3 > 0",
+          "n_lc_bv > 0"
+        ],
+        "python_verification": {},
+        "biological_note": "N.Lc/BV in cortical bone is typically 20,000-80,000 /mm³, depending on anatomical site and age. Values far outside this range are suspicious."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_9",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Compute the average distance between nearest-neighbor lacunae centroids in {volume_relative_path}. Report mean, std, and minimum nearest-neighbor distance in μm.",
+    "additional_instructions": "Compute centroids of all detected lacunae. For each lacuna, find its nearest neighbor (Euclidean distance in μm using voxel_size). Report statistics over all nearest-neighbor distances. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'mean_nn_distance_um' (float), 'std_nn_distance_um' (float), 'min_nn_distance_um' (float), 'n_lacunae' (int).",
+    "rationale": "Nearest-neighbor distance is a standard spatial analysis metric that also serves as a quality check (very small distances = touching objects = likely over-segmentation).",
+    "capabilities": [
+      "lacunae_segmentation",
+      "spatial_distribution_analysis",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "mean_nn_distance_um": "float",
+          "std_nn_distance_um": "float",
+          "min_nn_distance_um": "float",
+          "n_lacunae": "int"
+        },
+        "rules": [
+          "n_lacunae > 1",
+          "min_nn_distance_um > 0",
+          "mean_nn_distance_um > min_nn_distance_um",
+          "std_nn_distance_um >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": "Nearest-neighbor distances between cortical bone lacunae are typically 20-30 μm. Values below a few μm suggest merged or noise objects."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_10",
+    "data_type": "multiple_volumes",
+    "dataset_relative_path": [
+      "data/dataset_f/grouping_01/group_1",
+      "data/dataset_f/grouping_02/group_1",
+      "data/dataset_f/grouping_03/group_1",
+      "data/dataset_f/grouping_04/group_1",
+      "data/dataset_f/grouping_05/group_1",
+      "data/dataset_f/grouping_06/group_1"
+    ],
+    "question": "Run lacunar segmentation on all NIfTI samples in {dataset_relative_path}. Report N.Lc/BV for each sample and identify the sample with highest and lowest lacunar density.",
+    "additional_instructions": "Use every .nii or .nii.gz sample file directly inside {dataset_relative_path}; the files may be symlinks and should be followed as normal input files. Do not expect nested sample subdirectories for this task. Run the standard segmentation pipeline for each sample, compute N.Lc/BV for each result, sort samples by N.Lc/BV, and report the top and bottom sample IDs. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'n_lc_bv_per_sample' (dict: sample_id → float), 'highest_density_sample' (string), 'lowest_density_sample' (string), 'cohort_mean' (float), 'cohort_std' (float).",
+    "rationale": "Cross-sample comparison is a key use case for the agent and tests batch segmentation capability.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "scalar_calculation",
+      "descriptive_statistics"
+    ],
+    "sample_id": [
+      "grouping_01_group_1",
+      "grouping_02_group_1",
+      "grouping_03_group_1",
+      "grouping_04_group_1",
+      "grouping_05_group_1",
+      "grouping_06_group_1"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis"
+        ],
+        "forbidden_routes": [
+          "react_free"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": false,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 3
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_lc_bv_per_sample": "dict",
+          "highest_density_sample": "string",
+          "lowest_density_sample": "string",
+          "cohort_mean": "float",
+          "cohort_std": "float"
+        },
+        "rules": [
+          "len(n_lc_bv_per_sample) == 6",
+          "len(n_lc_bv_per_sample) > 0",
+          "min(n_lc_bv_per_sample.values()) > 0",
+          "highest_density_sample != lowest_density_sample",
+          "cohort_mean > 0",
+          "cohort_std >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_13",
+    "data_type": "single_volume",
+    "question": "Given a pre-computed segmentation mask at {mask_relative_path}, validate its quality: report the fraction of 2D slices in which at least one lacuna is detected.",
+    "additional_instructions": "For each Z-slice of the mask, check if any voxels are labeled as lacunae. Report fraction of slices with at least one detection.",
+    "output_instructions": "Return a JSON object with keys 'fraction_slices_with_detections' (float), 'n_slices_with_detections' (int), 'n_total_slices' (int).",
+    "rationale": "Slice-wise detection coverage is a simple but effective quality metric for 3D segmentation completeness.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "slice_wise_processing",
+      "scalar_calculation"
+    ],
+    "sample_id": [
+      "T1_S7_step0_Z0_slices_z0924-z1124",
+      "T1_S26_step1_Z0_slices_z0924-z1124",
+      "T5_S33_step0_Z0_slices_z0924-z1124",
+      "T2_S53_step1_Z0_slices_z0924-z1124",
+      "T4_S31_step0_Z0_slices_z0924-z1124",
+      "T2_S41_step0_Z0_slices_z0924-z1124"
+    ],
+    "segmentation_relative_path": "data/dataset_c/{sample_id}/segmentation/{sample_id}_segmented.nii.gz",
+    "mask_relative_path": [
+      "data/dataset_c/T1_S7_step0_Z0_slices_z0924-z1124/segmentation/T1_S7_step0_Z0_slices_z0924-z1124_segmented.nii.gz",
+      "data/dataset_c/T1_S26_step1_Z0_slices_z0924-z1124/segmentation/T1_S26_step1_Z0_slices_z0924-z1124_segmented.nii.gz",
+      "data/dataset_c/T5_S33_step0_Z0_slices_z0924-z1124/segmentation/T5_S33_step0_Z0_slices_z0924-z1124_segmented.nii.gz",
+      "data/dataset_c/T2_S53_step1_Z0_slices_z0924-z1124/segmentation/T2_S53_step1_Z0_slices_z0924-z1124_segmented.nii.gz",
+      "data/dataset_c/T4_S31_step0_Z0_slices_z0924-z1124/segmentation/T4_S31_step0_Z0_slices_z0924-z1124_segmented.nii.gz",
+      "data/dataset_c/T2_S41_step0_Z0_slices_z0924-z1124/segmentation/T2_S41_step0_Z0_slices_z0924-z1124_segmented.nii.gz"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "code_sandbox",
+        "necessary_routes": [
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "imaging_manipulation"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [],
+        "forbidden_tools": [],
+        "required_tool_sequence": []
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": false,
+        "required_extension_groups": []
+      },
+      "dimension_E_final_output": {
+        "strategy": "range_check",
+        "variables_to_extract": {
+          "fraction_slices_with_detections": "float",
+          "n_slices_with_detections": "int",
+          "n_total_slices": "int"
+        },
+        "rules": [
+          "n_total_slices > 0",
+          "0 <= n_slices_with_detections <= n_total_slices",
+          "0 < fraction_slices_with_detections <= 1.0",
+          "abs(fraction_slices_with_detections - (n_slices_with_detections / n_total_slices)) < 1e-6"
+        ],
+        "python_verification": {},
+        "biological_note": "In a dense cortical bone sample, lacunae should be present in virtually every slice (>90%). Fractions < 50% suggest under-segmentation."
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_14",
+    "data_type": "single_volume",
+    "volume_relative_path": [
+      "data/dataset_e/T1_S7step0_Z0/T1_S7step0_Z0_original.nii.gz",
+      "data/dataset_e/T1_S26step1_Z0/T1_S26step1_Z0_original.nii.gz",
+      "data/dataset_e/T5_S33step0_Z0/T5_S33step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S53step1_Z0/T2_S53step1_Z0_original.nii.gz",
+      "data/dataset_e/T4_S31step0_Z0/T4_S31step0_Z0_original.nii.gz",
+      "data/dataset_e/T2_S41step0_Z0/T2_S41step0_Z0_original.nii.gz"
+    ],
+    "question": "Post-process the lacunar segmentation of {volume_relative_path} by removing connected components smaller than 50 μm³ and larger than 10,000 μm³. Report how many components are removed by each filter.",
+    "additional_instructions": "Apply size filters sequentially. Report counts removed by small-object filter and large-object filter separately. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'n_before_filtering' (int), 'n_removed_too_small' (int), 'n_removed_too_large' (int), 'n_after_filtering' (int).",
+    "rationale": "Size-based post-processing is standard practice; validates the agent can apply and report filtering operations correctly.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "connected_component_analysis",
+      "scalar_calculation"
+    ],
+    "sample_id": "T1_S7step0_Z0",
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "imaging_manipulation",
+        "necessary_routes": [
+          "imaging_manipulation",
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free",
+          "filesystem_and_format_intake"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 1
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "sanity_check",
+        "variables_to_extract": {
+          "n_before_filtering": "int",
+          "n_removed_too_small": "int",
+          "n_removed_too_large": "int",
+          "n_after_filtering": "int"
+        },
+        "rules": [
+          "n_after_filtering == n_before_filtering - n_removed_too_small - n_removed_too_large",
+          "n_before_filtering >= 0",
+          "n_removed_too_small >= 0",
+          "n_removed_too_large >= 0",
+          "n_after_filtering >= 0"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  },
+  {
+    "id": "segmentation_qa_15",
+    "data_type": "multiple_volumes",
+    "dataset_relative_path": [
+      "data/dataset_f/grouping_01",
+      "data/dataset_f/grouping_02",
+      "data/dataset_f/grouping_03",
+      "data/dataset_f/grouping_04",
+      "data/dataset_f/grouping_05",
+      "data/dataset_f/grouping_06"
+    ],
+    "question": "Compare lacunar counts between group_1 and group_2 sample folders in {dataset_relative_path}. Report mean N.Lc/BV per group and whether the difference is statistically significant (Mann-Whitney U test).",
+    "additional_instructions": "Treat each direct child folder of {dataset_relative_path} as one group. The group labels are exactly the folder names group_1 and group_2. Use every .nii or .nii.gz sample file inside those two group folders; the files may be symlinks and should be followed as normal input files. Do not infer group labels from filename prefixes and do not look for metadata.csv. Run segmentation per sample, compute N.Lc/BV for each sample, apply a Mann-Whitney U test between group_1 and group_2, and report the p-value. Use voxel size = 0.0016 mm (1.6 μm) per voxel side (voxel volume = (1.6 μm)³ ≈ 4.096 μm³).",
+    "output_instructions": "Return a JSON object with keys 'group_labels' (list of str), 'mean_n_lc_bv_per_group' (dict), 'mann_whitney_u' (float), 'p_value' (float), 'significant_at_0_05' (bool).",
+    "rationale": "Group comparison is the primary clinical use case for the pipeline; validates end-to-end quantitative output including statistical testing.",
+    "capabilities": [
+      "lacunae_segmentation",
+      "scalar_calculation",
+      "hypothesis_testing",
+      "descriptive_statistics"
+    ],
+    "sample_id": [
+      "grouping_01",
+      "grouping_02",
+      "grouping_03",
+      "grouping_04",
+      "grouping_05",
+      "grouping_06"
+    ],
+    "evaluation": {
+      "dimension_A_routing": {
+        "expected_primary_route": "filesystem_and_format_intake",
+        "necessary_routes": [
+          "filesystem_and_format_intake",
+          "imaging_manipulation",
+          "quantitative_imaging_analysis",
+          "code_sandbox"
+        ],
+        "forbidden_routes": [
+          "react_free"
+        ]
+      },
+      "dimension_B_task": {
+        "expected_task": "The graph should run the requested task for the specified input path(s), derive the requested values from the actual data or tool outputs, and return the exact JSON fields requested.",
+        "rationale_for_llm_judge": "Pass if the graph uses the intended input files, performs the concrete computation or workflow requested, and returns the requested JSON fields with values grounded in the run. Fail if it uses placeholder paths, answers conceptually, omits required fields, invents values, or analyzes the wrong data."
+      },
+      "dimension_C_tools": {
+        "requires_sandbox": true,
+        "expected_tools": [
+          "segment_microscopy",
+          "count_lacunae",
+          "calculate_bone_volume_otsu"
+        ],
+        "forbidden_tools": [],
+        "required_tool_sequence": [
+          "segment_microscopy",
+          "count_lacunae"
+        ]
+      },
+      "dimension_D_artifacts": {
+        "requires_artifacts": true,
+        "required_extension_groups": [
+          {
+            "extensions": [
+              ".nii",
+              ".nii.gz"
+            ],
+            "min_count": 6
+          }
+        ]
+      },
+      "dimension_E_final_output": {
+        "strategy": "format_check",
+        "variables_to_extract": {
+          "group_labels": "list of str",
+          "mean_n_lc_bv_per_group": "dict",
+          "mann_whitney_u": "float",
+          "p_value": "float",
+          "significant_at_0_05": "bool"
+        },
+        "rules": [
+          "sorted(group_labels) == ['group_1', 'group_2']",
+          "len(mean_n_lc_bv_per_group) == 2",
+          "min(mean_n_lc_bv_per_group.values()) > 0",
+          "mann_whitney_u >= 0",
+          "0 <= p_value <= 1",
+          "significant_at_0_05 == (p_value < 0.05)"
+        ],
+        "python_verification": {},
+        "biological_note": ""
+      }
+    }
+  }
+]

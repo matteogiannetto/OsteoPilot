@@ -1,0 +1,9 @@
+# Data
+data/
+B_Python - Lacunae detection/
+
+# Python
+__pycache__/
+
+# MacOS
+.DS_Store
